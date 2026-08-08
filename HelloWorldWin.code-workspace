@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../SGDK"
+		}
+	],
+	"settings": {
+		"terminal.integrated.defaultProfile.windows": "Command Prompt"
+	}
+}
