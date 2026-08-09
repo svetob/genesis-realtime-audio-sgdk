@@ -1,6 +1,6 @@
 {
     "terminal.integrated.defaultProfile.windows": "Command Prompt",
-    "files.exclude": {
+    "search.exclude": {
         ".github": true,
         "**/*.o": true,
         "**/*.d": true,
