@@ -10,8 +10,8 @@
 void* pcm_stream = NULL;
 void* afx_echo = NULL;
 
-static void streamProcessingCallback(u8* stream, u16 len, void* data) {
-    AFX_echo_process(stream, len, afx_echo);
+static void streamProcessingCallback(s8* stream, u16 len, void* data) {
+    AFX_echo_process((s8*) stream, len, afx_echo);
 }
 
 static void playStream() {
@@ -44,7 +44,6 @@ static void resetStream() {
 }
 
 static void playSound() {
-    //XGM2_playPCMEx(wav_snare_rim, sizeof(wav_snare_rim), SOUND_PCM_CH3, 15, false, false);
     PCM_STREAM_playSound((u8*) wav_snare_rim, sizeof(wav_snare_rim), pcm_stream);   
 }
 

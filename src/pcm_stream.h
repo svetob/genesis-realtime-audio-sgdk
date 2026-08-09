@@ -32,7 +32,7 @@ typedef enum
  *      Data for the audio processor.<br>
  *      Should be e.g. a struct with needed config and data for audio processing.
  */
-typedef void SoundPCMStreamProcessingCallback(u8* stream, u16 len, void* data);
+typedef void SoundPCMStreamProcessingCallback(s8* stream, u16 len, void* data);
 
 /**
  *  \brief

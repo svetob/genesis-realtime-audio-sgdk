@@ -18,25 +18,26 @@ void AFX_echo_free(AFX_Echo* afx) {
     MEM_free(afx);
 }
 
-void AFX_echo_process(u8* samples, u16 size, AFX_Echo* afx) {
-    u8* line = afx->delayLine;
+void AFX_echo_process(s8* samples, u16 size, AFX_Echo* afx) {
+    s8* line = afx->delayLine;
     u16 pos = afx->pos;
     u16 delay = afx->size;
 
-    for (u16 i = 0; i < size; i++) {
-        u8 lineSample = line[pos];
-        u8 sample = samples[i];
-        u8 out = sample + (lineSample >> 1);
+    while (size--) {
+        s8 lineSample = line[pos];
+        s8 sample = *samples;
+        s8 out = lineSample == -1 ? sample : sample + (lineSample >> 1);
         
-        samples[i] = out;
+        *samples++ = out;
         line[pos++] = out;
 
-        //KLog_U3("Smpl", sample, "Line", lineSample, "Out", out);
+        //KLog_U2("Samp ", sample, ", Out", out);
 
-        if (pos > delay) {
+        if (pos >= delay) {
             pos = 0;
         }
     }
 
     afx->pos = pos;
 }
+
