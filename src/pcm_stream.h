@@ -3,11 +3,6 @@
 
 #include <genesis.h>
 
-void XGM2_API_peek_channel(SoundPCMChannel channel, u32* addr, u16* len, u8* isPlaying);
-
-#define PCM_STREAM_SIZE 1024
-#define PCM_STREAM_BUFFER_SIZE 512
-
 /**
  *  \brief
  *      Current playback status of stream
@@ -19,31 +14,6 @@ typedef enum
     PCM_STREAM_STATUS_BUFFER1 = 2, // Second buffer of stream is playing
 } SoundPCMStreamStatus;
 
-/**
- *  \brief
- *      Action to take on stream this frame
- */
-typedef enum
-{
-    PCM_STREAM_ACTION_NONE = 0, // Do nothing
-    PCM_STREAM_ACTION_STOP = 1, // Stop and release stream
-    PCM_STREAM_ACTION_PROCESS_BUFFER_0 = 2, // Apply audio processing to first buffer
-    PCM_STREAM_ACTION_PROCESS_BUFFER_1 = 3, // Apply audio processing to second buffer
-} SoundPCMStreamAction;
-
-/**
- *  \brief
- *      Sound PCM Stream data
- */
-typedef struct
-{
-    void* buffer;
-    SoundPCMChannel channel;
-    SoundPCMStreamStatus status;
-
-    void* pcm_sound;
-    int pcm_remain;
-} SoundPCMStream;
 
 /**
  * \brief
@@ -52,27 +22,50 @@ typedef struct
  *      The callback is called after stream has had playing PCM sounds rendered onto it.<br>
  *      If no sounds are playing, the stream is cleared (with zeroes).
  * 
+ * \param stream
+ *      The PCM stream to apply audio proccessing onto.
+ * 
+ * \param len
+ *      Number of samples to process.
+ * 
  * \param data
  *      Data for the audio processor.<br>
  *      Should be e.g. a struct with needed config and data for audio processing.
- * 
- * 
  */
-typedef void SoundPCMStreamProcessingCallback(void* data);
+typedef void SoundPCMStreamProcessingCallback(u8* stream, u16 len, void* data);
+
+/**
+ *  \brief
+ *      Sound PCM Stream data struct
+ */
+typedef struct
+{
+    void* buffer;
+    SoundPCMChannel channel;
+    SoundPCMStreamStatus status;
+
+    SoundPCMStreamProcessingCallback* cb;
+    void* cb_data;
+
+    void* pcm_sound;
+    u16 pcm_remain;
+} SoundPCMStream;
 
 
-SoundPCMStream* PCM_STREAM_create(SoundPCMChannel channel, bool clear);
+SoundPCMStream* PCM_STREAM_create(
+    SoundPCMChannel channel,
+    SoundPCMStreamProcessingCallback* callback,
+    void* callbackData
+);
 void PCM_STREAM_reset(SoundPCMStream* stream);
 void PCM_STREAM_free(SoundPCMStream* stream);
+
+void PCM_STREAM_update(SoundPCMStream* stream);
 
 void PCM_STREAM_start(SoundPCMStream* stream);
 void PCM_STREAM_isPlaying(SoundPCMStream* stream);
 void PCM_STREAM_stop(SoundPCMStream* stream);
 
-void PCM_STREAM_playSound(u8* pcm);
-
-SoundPCMStreamAction PCM_STREAM_updateAndGetAction(SoundPCMStream* stream);
-void* PCM_STREAM_getBuffer0(SoundPCMStream* stream);
-void* PCM_STREAM_getBuffer1(SoundPCMStream* stream);
+void PCM_STREAM_playSound(u8* pcm, u16 len, SoundPCMStream* stream);
 
 #endif
