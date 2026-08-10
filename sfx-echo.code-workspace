@@ -8,6 +8,10 @@
 		}
 	],
 	"settings": {
-		"terminal.integrated.defaultProfile.windows": "Command Prompt"
+		"terminal.integrated.defaultProfile.windows": "Command Prompt",
+		"m68k.vasm.provideDiagnostics": false,
+		"[m68k]": {
+			"editor.rulers": []
+		}
 	}
 }

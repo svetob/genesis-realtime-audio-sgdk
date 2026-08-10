@@ -5,7 +5,7 @@
 
 #define PCM_PLAYBACK_RATE 13300
 
-#define ECHO_DELAY_SAMPLES 2000
+#define ECHO_DELAY_SAMPLES 4096
 
 void* pcm_stream = NULL;
 void* afx_echo = NULL;

@@ -1,7 +1,12 @@
 SGDK_PATH := D:\Gamedev\Genesis\SGDK
+MAME_PATH := D:\Gamedev\Genesis\Emulators\Mame
+
 OUT := out
 
-build:
+clean:
+	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makefile.gen clean
+
+build: clean
 	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makefile.gen
 
 asm:
@@ -13,3 +18,6 @@ asm-motorola: asm
 
 build-sgdk:
 	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makelib.gen
+
+debug-mame: build
+	$(MAME_PATH)\mame.exe genesis -cart $(OUT)\rom.bin -debug
