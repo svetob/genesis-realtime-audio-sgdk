@@ -9,6 +9,16 @@ extern void AFX_echo_process_ASM(
     u16 len
 ); 
 
+extern void AFX_echo_process_4x_ASM(
+    s8* samples,
+    u16 size,
+    s8* delay_line,
+    u16 pos,
+    u16 len
+); 
+
+
+
 AFX_Echo* AFX_echo_create(u16 delay) {
     void* buf = MEM_alloc(delay);
     memset(buf, 0, delay);
@@ -31,7 +41,7 @@ void AFX_echo_process(s8* samples, u16 size, AFX_Echo* afx) {
 
 
 
-    AFX_echo_process_ASM(
+    AFX_echo_process_4x_ASM(
         samples,
         size,
         afx->delayLine,
