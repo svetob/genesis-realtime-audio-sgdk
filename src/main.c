@@ -5,13 +5,13 @@
 
 #define PCM_PLAYBACK_RATE 13300
 
-#define ECHO_DELAY_SAMPLES 2000
+#define ECHO_DELAY_SAMPLES 4096
 
-void* pcm_stream = NULL;
-void* afx_echo = NULL;
+SoundPCMStream* pcm_stream = NULL;
+AFX8_Echo* afx_echo = NULL;
 
 static void streamProcessingCallback(s8* stream, u16 len, void* data) {
-    AFX_echo_process((s8*) stream, len, afx_echo);
+    AFX8_echo_process((s8*) stream, len, afx_echo);
 }
 
 static void playStream() {
@@ -59,9 +59,8 @@ static void handleInput(u16 joy, u16 changed, u16 state) {
 
 int main(bool hard)
 {
-    VDP_drawText("Hello World!", 10, 13);
+    VDP_drawText("8-Bit Echo demo!", 10, 13);
 
-    // Set up keyboard listener
     JOY_setEventHandler(handleInput);
     Z80_loadDriver(Z80_DRIVER_XGM2, true);
 

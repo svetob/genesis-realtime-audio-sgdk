@@ -5,8 +5,8 @@
 
 // === PRIVATE FUNCTIONS ===
 
-#define PCM_STREAM_SIZE 512
-#define PCM_STREAM_BUFFER_SIZE PCM_STREAM_SIZE / 2
+#define PCM_STREAM_SIZE        512
+#define PCM_STREAM_BUFFER_SIZE 256
 
 // Addresses to internal Z80 vars
 // TODO: Use existing constants instead

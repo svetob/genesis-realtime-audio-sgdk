@@ -2,6 +2,8 @@
     "recommendations": [
         "ms-vscode.cpptools",
         "ms-vscode.cpptools-extension-pack",
-        "zerasul.genesis-code"
+        "zerasul.genesis-code",
+        "gigabates.68kcounter",
+        "clcxce.motorola-68k-assembly"
     ]
 }

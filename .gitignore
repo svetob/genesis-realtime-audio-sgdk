@@ -1,2 +1,7 @@
+# Build output
 out/*
 !out/rom.bin
+
+# MAME
+cfg/
+nvram/
