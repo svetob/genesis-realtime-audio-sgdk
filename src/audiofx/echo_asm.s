@@ -21,7 +21,7 @@
 ****************************************************************
 
 
-* extern void AFX_echo_process_ASM(
+* extern void AFX_echo_process256_ASM(
 *     s8* samples,
 *     u16 size,
 *     s8* delay_line,
@@ -29,7 +29,7 @@
 *     u16 len
 * ); 
 
-func AFX_echo_process_ASM
+func AFX_echo_process256_ASM
     movem.l %a0-%a2/%d0-%d6, -(sp)
 
 afx_echo_init:
