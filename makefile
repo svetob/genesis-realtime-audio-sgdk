@@ -21,3 +21,12 @@ build-sgdk:
 
 debug-mame: build
 	$(MAME_PATH)\mame.exe genesis -cart $(OUT)\rom.bin -debug
+
+# Format and lint using clang-format
+SRC_FILES := $(wildcard src/*.c src/*.h src/*/*.c src/*/*.h src/*/*/*.c src/*/*/*.h)
+
+format:
+	clang-format -i $(SRC_FILES)
+
+format-check:
+	clang-format --dry-run --Werror $(SRC_FILES)
