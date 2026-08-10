@@ -1,4 +1,5 @@
 #include "asm_mac.i"
+#include "echo_mac.i"
 
 ****************************************************************
 * Important notes :
@@ -58,46 +59,26 @@ afx_echo_init:
 afx_echo_loop:
     
 .L1:
-    * Read samples into d3
-    move.l (%a0), %d3
+    afx_echo_doProcess
+    afx_echo_doProcess
+    afx_echo_doProcess
+    afx_echo_doProcess
+    afx_echo_doProcess
+    afx_echo_doProcess
+    afx_echo_doProcess
+    afx_echo_doProcess
+    afx_echo_doProcess
+    afx_echo_doProcess
+    afx_echo_doProcess
+    afx_echo_doProcess
+    afx_echo_doProcess
+    afx_echo_doProcess
+    afx_echo_doProcess
+    afx_echo_doProcess
 
-    * Read line samples into d4
-    move.l (%a2), %d4
-
-    * -- Mix em together, result in d4
-
-    * Fix for 0xFF >> 1 = 0xFF (-1 >> 1 = -1) leaving behind a noise floor in delay line
-    move.l %d4, %d6
-    andi.l #0x80808080, %d6
-    lsr.l #7, %d6
-    add.l %d6, %d4
-    
-    * Get delay line sign bits into d6
-    move.l %d4, %d6
-    andi.l #0x80808080, %d6
-
-    * 50% delay line feedback (halce delay line sample)
-    asr.l #1, %d4
-
-    * Reattach sign bits
-    andi.l #0x7F7F7F7F, %d4
-    add.l %d6, %d4
-
-    * Now mix
-    add.l %d4, %d3
-
-    * --Write result to out and line
-    move.l %d3, (%a0)+
-    move.l %d3, (%a2)+
-
-    * Wrap delay_line
-    cmp.l %a2, %d5
-    bne .L2
-    move.l %a1, %a2
 .L2:
-
     * Loops if size > 0
-    subq.w #1, %d0
+    subi.w #16, %d0
     bne .L1
     
     

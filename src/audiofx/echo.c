@@ -10,6 +10,7 @@ extern void AFX_echo_process_ASM(
 ); 
 
 AFX_Echo* AFX_echo_create(u16 delay) {
+    delay = delay & 0xFF00; // Delay must be multiple of 256
     void* buf = MEM_alloc(delay);
     memset(buf, 0, delay);
     
