@@ -1,15 +1,13 @@
 {
     "terminal.integrated.defaultProfile.windows": "Command Prompt",
     "editor.formatOnSave": true,
+    "C_Cpp.intelliSenseEngine": "default",
     "[c]": {
         "editor.defaultFormatter": "xaver.clang-format"
     },
     "[cpp]": {
         "editor.defaultFormatter": "xaver.clang-format"
     },
-    "clang-format.executable": "clang-format",
-    "clang-format.language.c.style": "file",
-    "clang-format.language.cpp.style": "file",
     "search.exclude": {
         ".github": true,
         "**/*.o": true,
