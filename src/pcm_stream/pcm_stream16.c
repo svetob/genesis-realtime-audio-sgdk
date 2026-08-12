@@ -8,7 +8,8 @@
 #define PCMS16_HEADROOM_BITS 3
 #define PCMS16_DECIMAL_BITS  (8 - PCMS16_HEADROOM_BITS)
 
-extern void PCM_STREAM16_renderToOutputBuffer_ASM(s16 *render, s8 *out, void *downscale_table);
+extern void PCM_STREAM16_renderToOutputBuffer_ASM(s16 *render, s8 *out);
+extern void PCM_STREAM16_upscaleAndRenderSoundToStream_ASM(s8 *pcm, s16 *render);
 
 // ===========================
 // PRIVATE
@@ -38,38 +39,17 @@ static inline void doProcessingCallback(void *buf, PCMStream16 *stream)
     }
 }
 
-static inline void renderSoundsToStream(s16 *buf, PCMStream16 *stream)
+static inline void renderSoundsToStream(PCMStream16 *stream)
 {
-    int pcm_len = stream->pcm_remain;
-    int process_len =
-        pcm_len > PCM_STREAM_BUFFERLEN_SAMPLES ? PCM_STREAM_BUFFERLEN_SAMPLES : pcm_len;
-    int len_remain = PCM_STREAM_BUFFERLEN_SAMPLES - process_len;
-
-    stream->pcm_remain -= process_len;
-
-    s8 *p_pcm = stream->pcm_sound;
-    s16 *p_buf = buf;
-
 #ifdef DEBUG_LOG
-    KLog_U4("Playing sound stream16 - from 8bit PCM at ", p_pcm, ", 10 16bit buf ", buf,
-            ", len remaining ", pcm_len, ", samples to render this pass ", process_len);
+    KLog_U3("Playing sound stream16 - from 8bit PCM at ", stream->pcm_sound, ", to 16bit buf ",
+            stream->render, ", len remaining ", stream->pcm_remain);
 #endif
 
-    while (process_len--) {
-        // s8 pcmsamp = (s8) (*p_pcm++);
-        // s16 rend = ((s16) pcmsamp) << PCMS16_DECIMAL_BITS;
-        // // KLog_U2("Sample ", pcmsamp, ", out ", rend);
-        // *p_buf++ = rend;
+    PCM_STREAM16_upscaleAndRenderSoundToStream_ASM(stream->pcm_sound, stream->render);
 
-        *p_buf++ = ((s16) (*p_pcm++)) << PCMS16_DECIMAL_BITS;
-    }
-
-    // Clear remainder after finished sound
-    if (len_remain > 0) {
-        memset(p_buf, 0, len_remain * 2);
-    }
-
-    if (stream->pcm_remain == 0) {
+    stream->pcm_remain -= PCM_STREAM_BUFFERLEN_SAMPLES;
+    if (stream->pcm_remain <= 0) {
         stream->pcm_sound = NULL;
     } else {
         stream->pcm_sound += PCM_STREAM_BUFFERLEN_SAMPLES;
@@ -86,12 +66,12 @@ static void renderStreamBuffer(s8 *buf, PCMStream16 *stream)
     s16 *render = stream->render;
 
     // Clear if no sound playing, or if instrument is playing
-    if (stream->pcm_sound == NULL || stream->inst_cb != NULL) {
+    // if (stream->pcm_sound == NULL || stream->inst_cb != NULL) {
 #ifdef DEBUG_LOG
-        KLog_U2("Clearing render buffer at ", render, ", len ", PCM_STREAM16_BUFFER_SIZE);
+    KLog_U2("Clearing render buffer at ", render, ", len ", PCM_STREAM16_BUFFER_SIZE);
 #endif
-        memset(render, 0, PCM_STREAM16_BUFFER_SIZE);
-    }
+    memset(render, 0, PCM_STREAM16_BUFFER_SIZE);
+    //}
 
     // Render instruments onto buffer
     doInstrumentCallback(render, stream);
@@ -102,12 +82,12 @@ static void renderStreamBuffer(s8 *buf, PCMStream16 *stream)
         KLog_U3("Rendering sound ", stream->pcm_sound, " at ", render, ", remain ",
                 stream->pcm_remain);
 #endif
-        renderSoundsToStream(render, stream);
+        renderSoundsToStream(stream);
     }
 
     doProcessingCallback(render, stream);
 
-    PCM_STREAM16_renderToOutputBuffer_ASM(render, buf, (void *) downscale_table);
+    PCM_STREAM16_renderToOutputBuffer_ASM(render, buf);
 }
 
 // ===========================

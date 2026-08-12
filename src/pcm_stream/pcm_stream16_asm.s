@@ -20,35 +20,57 @@
 * as 0x000000FF not 0xFF and takes 4 bytes on stack not 1.
 ****************************************************************
 
-* extern void PCM_STREAM16_renderToOutputBuffer_ASM(s16* render, s8* out, void* downscale_table)
+* extern void PCM_STREAM16_renderToOutputBuffer_ASM(s16* render, s8* out)
 
 func    PCM_STREAM16_renderToOutputBuffer_ASM
-        movem.l %a0-%a2/%d0-d1,-(sp)
+        movem.l %a0-%a2/%d0,-(sp)
 
 pcms16_renderout_init:
         * renderBuf -> a0
-        movea.l 24(%sp),%a0
+        movea.l 20(%sp),%a0
         * outBuf -> a1
-        movea.l 28(%sp),%a1
-        * clipTable -> a2
-        movea.l 32(%sp),%a2
-
-        * i -> d0
-        move.w  #0x100,%d0
-
-        move.l  #0,%d1
+        movea.l 24(%sp),%a1
+        
+        lea     downscale_table,%a2
+        move.l  #0,%d0
 
 pcms16_renderout_loop:
-
-.L1:
         PCM_STREAM16_renderToOutputBuffer_doProcess256
 
-*        move.w  (%a0)+,%d1
-*        move.b  (%a2,%d1.l),(%a1)+
-        
-*        subq    #1,%d0
-*        bne     .L1
-
 pcms16_renderout_return:
-        movem.l (sp)+,%a0-%a2/%d0-d1
+        movem.l (sp)+,%a0-%a2/%d0
+        rts
+
+
+* extern void PCM_STREAM16_upscaleAndRenderSoundToStream_ASM(s8* pcm, s16* extern void PCM_STREAM16_upscaleAndRenderSoundToStream_ASM(s8 *pcm, s16 *render);
+
+func    PCM_STREAM16_upscaleAndRenderSoundToStream_ASM
+        movem.l %a0-%a2/%d0-%d3,-(sp)
+
+pcms16_upscalerender_init:
+        * pcmPtr -> a0
+        movea.l 32(%sp),%a0
+        * renderBuf -> a1
+        movea.l 36(%sp),%a1
+
+        lea     upscale_table,%a2
+
+        * pcmSample -> d0
+        move.l  #0,%d0
+        * upscaledSample -> d1
+        move.l  #0,%d1
+        * outSample -> d2
+        move.l  #0,%d2
+        * i -> d3
+        move.l  #16,%d3
+
+pcms16_upscalerender_loop:
+.L1:
+        PCM_STREAM16_upscaleAndRenderSoundToStream_doProcess16
+
+        subq    #1,%d3
+        bne     .L1
+
+pcms16_upscalerender_return:
+        movem.l (sp)+,%a0-%a2/%d0-%d3
         rts

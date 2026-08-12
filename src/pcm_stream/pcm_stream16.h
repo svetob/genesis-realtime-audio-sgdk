@@ -76,7 +76,7 @@ typedef struct {
 
     // PCM sound playback
     void *pcm_sound;
-    u16 pcm_remain;
+    s16 pcm_remain;
 
     // Instrument playback
     PCMStream16InstrumentCallback *inst_cb;
