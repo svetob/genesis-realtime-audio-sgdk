@@ -1,11 +1,10 @@
 #include <genesis.h>
 #include "resources.h"
 #include "../inst/saw.h"
-#include "../audiofx/echo.h"
+#include "../audiofx/echo8.h"
 #include "../pcm_stream/pcm_stream8.h"
 
 #define PCM_PLAYBACK_RATE  13300
-
 #define ECHO_DELAY_SAMPLES 4096
 
 static PCMStream8 *pcm_stream = NULL;

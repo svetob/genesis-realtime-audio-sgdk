@@ -1,5 +1,5 @@
 
-.macro  afx_echo_doProcess
+.macro  afx8_echo_doProcess
 * Read samples into d3
         move.l  (a0),d3
 

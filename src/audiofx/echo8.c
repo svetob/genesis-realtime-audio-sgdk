@@ -1,7 +1,7 @@
 #include <genesis.h>
-#include "echo.h"
+#include "echo8.h"
 
-extern void AFX_echo_process256_ASM(s8 *samples, u16 size, s8 *delay_line, u16 pos, u16 len);
+extern void AFX8_echo_process256_ASM(s8 *samples, u16 size, s8 *delay_line, u16 pos, u16 len);
 
 AFX8Echo *AFX8_echo_create(u16 delay)
 {
@@ -25,7 +25,7 @@ void AFX8_echo_free(AFX8Echo *afx)
 
 void AFX8_echo_process256(s8 *samples, AFX8Echo *afx)
 {
-    AFX_echo_process256_ASM(samples, 256, afx->delayLine, afx->pos, afx->size);
+    AFX8_echo_process256_ASM(samples, 256, afx->delayLine, afx->pos, afx->size);
 
     afx->pos += 256;
     if (afx->pos >= afx->size) {

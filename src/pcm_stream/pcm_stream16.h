@@ -53,7 +53,7 @@ typedef void PCMStream16InstrumentCallback(s8 *stream, u16 len, void *data);
  *      Data for the audio processor.<br>
  *      Should be e.g. a struct with needed config and data for audio processing.
  */
-typedef void PCMStream16ProcessingCallback(s8 *stream, u16 len, void *data);
+typedef void PCMStream16ProcessingCallback(s16 *stream, u16 len, void *data);
 
 /**
  *  \brief

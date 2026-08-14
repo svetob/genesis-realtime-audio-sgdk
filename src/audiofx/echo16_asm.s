@@ -1,5 +1,5 @@
 #include "asm_mac.i"
-#include "echo_mac.i"
+#include "echo16_mac.i"
 
 ****************************************************************
 * Important notes :
@@ -21,7 +21,7 @@
 ****************************************************************
 
 
-* extern void AFX_echo_process256_ASM(
+* extern void AFX16_echo_process256_ASM(
 *     s8* samples,
 *     u16 size,
 *     s8* delay_line,
@@ -29,7 +29,7 @@
 *     u16 len
 * ); 
 
-func    AFX_echo_process256_ASM
+func    AFX16_echo_process256_ASM
         movem.l a0-a2/d0-d6,-(sp)
 
 afx_echo_init:
@@ -40,14 +40,14 @@ afx_echo_init:
 
 * size       -> s0
         move.l  48(sp),d0
-        lsr.w   #2,d0
-* pos       -> s0
+        lsr.w   #1,d0
+* pos        -> s0
         move.l  56(sp),d1
-* len       -> s0
+* len        -> s0
         move.l  60(sp),d2
 
 
-* linePtrAt -> a2
+* linePtrAt  -> a2
         move.l  a1,a2
         add.l   d1,a2
 
@@ -59,25 +59,24 @@ afx_echo_init:
 afx_echo_loop:
     
 .L1:
-        afx_echo_doProcess
-        afx_echo_doProcess
-        afx_echo_doProcess
-        afx_echo_doProcess
-        afx_echo_doProcess
-        afx_echo_doProcess
-        afx_echo_doProcess
-        afx_echo_doProcess
-        afx_echo_doProcess
-        afx_echo_doProcess
-        afx_echo_doProcess
-        afx_echo_doProcess
-        afx_echo_doProcess
-        afx_echo_doProcess
-        afx_echo_doProcess
-        afx_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
+        afx16_echo_doProcess
 
 .L2:
-* Loops if size > 0
         subi.w  #16,d0
         bne     .L1
     
