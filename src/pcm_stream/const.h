@@ -1,6 +1,7 @@
 #ifndef __PCM_STREAM_CONST_H
 #define __PCM_STREAM_CONST_H
 
+// TODO Use existing SGDK defines where possible
 #define PCM_PLAYBACK_RATE            13300
 
 #define PCM_STREAM_LEN_SAMPLES       512

@@ -1,7 +1,7 @@
 #include <genesis.h>
 #include "const.h"
 #include "pcm_stream8.h"
-#include "util.h"
+#include "xgm2_interface.h"
 
 // #define DEBUG_LOG
 
