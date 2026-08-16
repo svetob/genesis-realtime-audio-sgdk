@@ -103,7 +103,7 @@ PCMStream16 *PCM_STREAM16_create(SoundPCMChannel channel)
     stream->render = rndr;
     stream->buffer = buf;
     stream->bufferPos = 0;
-    stream->ringbufPosPrev = peek_XGM2_ringbuf_writepos();
+    stream->ringbufPosPrev = XGM2_PCM_peek_ringbuf_writepos();
 
     stream->status = PCM_STREAM_STATUS_STOPPED;
 
@@ -159,7 +159,7 @@ void PCM_STREAM16_update(PCMStream16 *stream)
         return;
     }
 
-    mix_into_PCM_ring_buffer(stream->buffer, &(stream->bufferPos), &(stream->ringbufPosPrev));
+    XGM2_PCM_mix_into_ringbuf(stream->buffer, &(stream->bufferPos), &(stream->ringbufPosPrev));
 
     PCMStream16Status statusPrev = stream->status;
     bool isBuffer0 = stream->bufferPos < 256;

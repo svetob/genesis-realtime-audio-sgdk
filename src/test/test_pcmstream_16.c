@@ -80,6 +80,18 @@ void testPCMStream16()
 
         if (pcm_stream != NULL) {
             updateStream();
+
+            vu16 i = 400;
+            while (i--) {
+            }
+
+            updateStream();
+
+            i = 400;
+            while (i--) {
+            }
+
+            updateStream();
         }
     }
 }
