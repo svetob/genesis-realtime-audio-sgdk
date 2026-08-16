@@ -3,7 +3,7 @@
 
 // #define DEBUG_LOG
 
-extern void XGM2_PCM_mixIntoBuffer(s8 *pcm, u8 *ringbuf);
+extern void XGM2_PCM_mixIntoRingBuffer(s8 *pcm, u8 *ringbuf);
 
 u8 XGM2_PCM_peek_ringbuf_writepos()
 {
@@ -33,14 +33,14 @@ void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *pos, u8 *ringbufPosPrev)
     // While not up to speed on write pos:
     while (writePos != writePosPrev) {
 
-        vs8 *write = (vs8 *) (XGM2_PCM_RINGBUF_ADDR + writePosPrev);
-        u8 *read = (u8 *) (pcmSource512 + posAt);
+        vu8 *write = (vu8 *) (XGM2_PCM_RINGBUF_ADDR + writePosPrev);
+        s8 *read = (s8 *) (pcmSource512 + posAt);
 
 #ifdef DEBUG_LOG
         KLog_U2("Mix from ", read, " to ", write);
 #endif
 
-        XGM2_PCM_mixIntoBuffer(read, write);
+        XGM2_PCM_mixIntoRingBuffer(read, write);
 
         writePosPrev += 0x40;
         posAt = (posAt + 0x40) & 0x01FF;

@@ -11,9 +11,11 @@
  */
 typedef enum {
     PCM_STREAM_STATUS_STOPPED = 0, // Stream is stopped
-    PCM_STREAM_STATUS_BUFFER0 = 1, // First buffer of stream is playing
-    PCM_STREAM_STATUS_BUFFER1 = 2, // Second buffer of stream is playing
-} PCMStreamStatus;
+    // TODO Add to stream8, vital fix
+    PCM_STREAM_STATUS_PLAYING_INIT = 1,    // Stream has just started playing
+    PCM_STREAM_STATUS_PLAYING_BUFFER0 = 2, // First buffer of stream is playing
+    PCM_STREAM_STATUS_PLAYING_BUFFER1 = 3, // Second buffer of stream is playing
+} PCMStream8Status;
 
 /**
  * \brief
@@ -52,19 +54,20 @@ typedef void PCMStreamInstrumentCallback(s8 *stream, u16 len, void *data);
  *      Data for the audio processor.<br>
  *      Should be e.g. a struct with needed config and data for audio processing.
  */
-typedef void PCMStreamProcessingCallback(s8 *stream, u16 len, void *data);
+typedef void PCMStream8ProcessingCallback(s8 *stream, u16 len, void *data);
 
 /**
  *  \brief
  *      Sound PCM Stream data struct
  */
 typedef struct {
-    void *buffer;
-    SoundPCMChannel channel;
-    PCMStreamStatus status;
+    void *buffer; // Output buffer
+    u16 bufferPos;
+    PCMStream8Status status; // Current playback status
+    u8 ringbufPosPrev;       // Previous ring buffer write position
 
     // AudioFX callback
-    PCMStreamProcessingCallback *afx_cb;
+    PCMStream8ProcessingCallback *afx_cb;
     void *afx_cb_data;
 
     // PCM sound playback
@@ -89,7 +92,7 @@ void PCM_STREAM_stop(PCMStream8 *stream);
 void PCM_STREAM_playSound(u8 *pcm, u16 len, PCMStream8 *stream);
 void PCM_STREAM_setInstrumentCallback(PCMStreamInstrumentCallback *callback, void *callbackData,
                                       PCMStream8 *stream);
-void PCM_STREAM_setProcessingCallback(PCMStreamProcessingCallback *callback, void *callbackData,
+void PCM_STREAM_setProcessingCallback(PCMStream8ProcessingCallback *callback, void *callbackData,
                                       PCMStream8 *stream);
 
 #endif
