@@ -2,28 +2,40 @@
 
 This is a proof-of-concept for real-time audio generation and processing on the Sega Genesis / Mega Drive.
 
-The ROM generates audio and applies effects (echo) in real time on the main 68000 processor. The audio is then streamed from RAM via the Z80 processor to the YM2162 sound chip.
+The ROM generates audio and applies effects (echo) in real time on the main 68000 processor. The audio is then streamed from RAM via the XGM2 driver on the Z80 processor to the YM2162 sound chip. No modifications to the XGM2 driver are necessary.
 
 ## Getting started
 
-First, you need to patch the XGM2 driver to allow for RAM streaming. See instruction in [PATCH.md](PATCH.md) - you only need to copy a few files :)
+A prebuit rom is in [out/rom.bin](out/rom.bin). Press A to play a sound effect with echo applied.
 
-After that just build and run the ROM in an emulator. The rom can be found prebuit in [out/rom.bin](out/rom.bin). Press A to play a regular sound effect, press B to play a sound effect with echo applied.
+## How the XGM2 driver integration is done
+
+As the XGM2 driver is already at full capacity in both space and performance, there was a question of how to add another PCM source to it. The Z80 can't handle processing another PCM stream, there is no space in Z80 memory for more PCM data, and the PCM stream also must be streamed from RAM, which the Z80 cannot access on real hardware. (but interestingly, it can on some emulators like MAME and Gens...) In addition, the XGM2 source code is very tightly handcrafted ASM, making it a very major challenge to edit.
+
+However, XGM2 renders PCM streams in advance to an __internal PCM ring buffer__. This buffer is 256 bytes long and is updated in 64-byte chunks. Luckily, outdated PCM chunks are re-rendered in a timely fashion (at least ~140 bytes in advance under normal circumstances). This means that we can add a live 13.3khz PCM audio stream to the XGM2 driver __without sacrificing any functionality or performance, with no driver modifications needed,__ by simply mixing it into the PCM ring buffer with well-timed updates! Under normal circumstances, only 2 bus transfers per frame are necessary on both PAL and NTSC, but to guarantee no missed audio chunks, we check for new chunks a few extra times per frame.
+
+So, this library works by generating a 13.3khz signed 8-bit PCM stream in software, and then submitting it to the DAC output by mixing it into the XGM2's internal ring buffer with multiple writes per frame.
 
 ## Known Issues
 
-### Bus contention
+### 8-bit vs 16-bit audio effects
 
-The main design issue currently is the obvious bus contention when reading from RAM. This will cause some audio glitches, but can curreently be worked around by using this feature only during scenes with minimal VDP transfers. The XGM2 driver reads samples in batches so if the VDP transfer is small the chance of audio glitches is low.
+The PCM output is 8-bit, so the straightforward approach for audio processing is 8-bit audio effects. However, in addition to the obvious lower audio fidelity, 8-bit audio effects also suffer from other problems, such as:
 
-The fix for this is to instead manually transfer the stream to a buffer in the Z80 RAM. To do this would require significant updates to the XGM2 driver. The current plan for minimizing this work is to modify the existing XGM2 driver into a variant that disables regular PCM SFX use and instead uses only streaming. In this case SFX mixing would be done on the 68000 and then copied directly onto the Z80 internal buffer. With this approach you would use the regular XGM2 driver for standard scenes and the streaming XGM2 driver for scenes requiring real-time audio effects.
+- Audio overflow, instead of clipping
+- Audible noise floors
+- Loss of precision when increasing gain on low audio signals
 
-### XGM2 RAM addressing limitations
+16-bit audio effects solve all the above problems, with the main tradeoff being more CPU cycles needed.
 
-The XGM2 driver normally disables reading from RAM to avoid bus contention issues. For this reason it also does not store the highest address bits. Due to driver internals, this will cause the PCM Stream address to be lost when any non-PCM task (music) starts.
+That said, you should be able to get away with using 8-bit audio effects, by being careful with audio levels when mixing to avoid overflows, and chaining effects carefully to avoid the other issues.
 
-This issue can be patched in the driver, but would also become a non-issue with the above driver rewrite.
+### Stream update timing
 
-### Buffer alignment
+The timing of when new ring buffer chunks are generated, and the timing margin for updating them in time, depends on the workload of the XGM driver. To guarantee updating all chunks in time under normal operation, we need to check for new audio chunks multiple times per frame.
 
-There are also issues with buffer alignment (must be 256-byte aligned) and crossing 32k boundaries. This can be worked around by manually specifying the address of the byte stream in RAM - see main.c. __TODO__
+The library provides utility functions to handle this, but if your game loop consumes a large amount of the frame budget, you might also want to add one or two extra checks at well selected spots in your game loop to make sure these updates are performed mid-frame when necessary.
+
+### Z80 freeze during updates
+
+The Z80 is frozen while stream updates are being transfered to the Z80. In theory, this should cause minor audio glitches as DAC output freezes for a brief moment, but in practice this seem to be barely audible. (At least to my ears...!) The stream transfer function is nevertheless optimized to minimize freeze time.
