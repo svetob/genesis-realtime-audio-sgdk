@@ -4,12 +4,17 @@
 #include "../audiofx/echo8.h"
 #include "../pcm_stream/pcm_stream8.h"
 
+#include "log.h"
+#include "timer.h"
+
 #define PCM_PLAYBACK_RATE  13300
 #define ECHO_DELAY_SAMPLES 4096
 
 static PCMStream8 *pcm_stream = NULL;
 static AFX8Echo *afx_echo = NULL;
 // static InstrSaw *inst_saw = NULL;
+
+static u16 scanlines = 0;
 
 static void streamProcessingCallback(s8 *stream, u16 len, void *data)
 {
@@ -40,7 +45,9 @@ static void playStream()
 
 static void updateStream()
 {
+    scanlineTimerStart();
     PCM_STREAM_update(pcm_stream);
+    scanlines += scanlineTimerStop();
 }
 
 static void resetStream()
@@ -74,6 +81,7 @@ static void handleInput(u16 joy, u16 changed, u16 state)
 void testPCMStream8()
 {
     VDP_drawText("8-Bit Echo demo!", 10, 13);
+    VDP_drawText("HInt used: ", 1, 30);
 
     JOY_setEventHandler(handleInput);
     Z80_loadDriver(Z80_DRIVER_XGM2, true);
@@ -85,10 +93,16 @@ void testPCMStream8()
     while (true) {
         SYS_doVBlankProcess();
 
+        scanlines = 0;
+
+        vu16 i = 400;
+        while (i--) {
+        }
+
         if (pcm_stream != NULL) {
             updateStream();
 
-            vu16 i = 400;
+            i = 400;
             while (i--) {
             }
 
@@ -100,5 +114,7 @@ void testPCMStream8()
 
             updateStream();
         }
+
+        logNamedU16("SCANLINES USED", scanlines, 1, 20, 3);
     }
 }
