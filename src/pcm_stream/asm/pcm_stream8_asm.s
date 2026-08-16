@@ -24,7 +24,7 @@ pcms8_renderpcm_init:
         * i -> d3
         move.b  #16,d3
         * 0x80 -> d4
-        move.b  #$80,d4
+        move.b  #0x80,d4
 
 pcms8_renderpcm_loop:
 .L1:

@@ -35,15 +35,15 @@ static inline void doProcessingCallback(void *buf, PCMStream8 *stream)
     }
 }
 
-static inline void renderSoundsToStream(PCMStream8 *stream)
+static inline void renderSoundsToStream(void *buf, PCMStream8 *stream)
 {
     if (stream->pcm_sound != NULL) {
 #ifdef DEBUG_LOG
-        KLog_U3("Playing sound stream16 - from 8bit PCM at ", stream->pcm_sound, ", to 16bit buf ",
-                stream->render, ", len remaining ", stream->pcm_remain);
+        KLog_U3("Playing sound stream16 - from 8bit PCM at ", stream->pcm_sound, ", to 8bit buf ",
+                buf, ", len remaining ", stream->pcm_remain);
 #endif
 
-        PCM_STREAM8_mixAndClip256_ASM(stream->pcm_sound, stream->buffer);
+        PCM_STREAM8_mixAndClip256_ASM(stream->pcm_sound, buf);
 
         stream->pcm_remain -= PCM_STREAM_BUFFERLEN_SAMPLES;
         if (stream->pcm_remain <= 0) {
@@ -63,11 +63,11 @@ static inline void renderSoundsToStream(PCMStream8 *stream)
 static void renderStreamBuffer(u8 *buf, PCMStream8 *stream)
 {
 #ifdef DEBUG_LOG
-    KLog_U2("Clearing at ", buf, ", len ", len);
+    KLog_U2("Clearing at ", buf, ", len ", PCM_STREAM8_BUFFER_SIZE);
 #endif
     memset(buf, 0, PCM_STREAM8_BUFFER_SIZE);
 
-    renderSoundsToStream(stream);
+    renderSoundsToStream(buf, stream);
     doInstrumentCallback(buf, stream);
     doProcessingCallback(buf, stream);
 }
