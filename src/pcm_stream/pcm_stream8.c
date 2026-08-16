@@ -1,7 +1,7 @@
 #include <genesis.h>
 #include "resources.h"
 #include "pcm_stream8.h"
-#include "xgm2_interface.h"
+#include "xgm2_pcm.h"
 
 // #define DEBUG_LOG
 
@@ -91,6 +91,7 @@ static void renderStreamBuffer(u8 *buf, PCMStream8 *stream)
 PCMStream8 *PCM_STREAM_create(SoundPCMChannel channel)
 {
     void *buf = MEM_alloc(PCM_STREAM8_SIZE);
+    memsetU32(buf, 0, PCM_STREAM8_SIZE >> 2);
 
     PCMStream8 *stream = MEM_alloc(sizeof(PCMStream8));
     stream->buffer = buf;
@@ -113,8 +114,9 @@ PCMStream8 *PCM_STREAM_create(SoundPCMChannel channel)
 
 void PCM_STREAM_reset(PCMStream8 *stream)
 {
-    // TODO if isplaying - stop
+    memsetU32(stream->buffer, 0, PCM_STREAM8_SIZE >> 2);
 
+    stream->bufferPos = 0;
     stream->status = PCM_STREAM_STATUS_STOPPED;
     stream->pcm_sound = NULL;
     stream->pcm_remain = 0;
@@ -122,8 +124,6 @@ void PCM_STREAM_reset(PCMStream8 *stream)
 
 void PCM_STREAM_free(PCMStream8 *stream)
 {
-    // TODO: Check if playing, stop if so
-
     MEM_free(stream->buffer);
     MEM_free(stream);
 }
@@ -132,9 +132,7 @@ void PCM_STREAM_start(PCMStream8 *stream)
 {
     stream->status = PCM_STREAM_STATUS_PLAYING_INIT;
     renderStreamBuffer(getBuffer0(stream), stream);
-
-    // TODO Remove and replace with the correct XGM2 flag updates
-    XGM2_playPCMEx(wav_empty, 512, SOUND_PCM_CH3, 15, false, true);
+    XGM2_PCM_activate();
 }
 
 void PCM_STREAM_stop(PCMStream8 *stream)

@@ -9,7 +9,7 @@
 
 static PCMStream8 *pcm_stream = NULL;
 static AFX8Echo *afx_echo = NULL;
-static InstrSaw *inst_saw = NULL;
+// static InstrSaw *inst_saw = NULL;
 
 static void streamProcessingCallback(s8 *stream, u16 len, void *data)
 {

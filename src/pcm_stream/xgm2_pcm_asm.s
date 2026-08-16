@@ -1,5 +1,5 @@
 #include "asm_mac.i"
-#include "xgm2_interface_mac.i"
+#include "xgm2_pcm_mac.i"
 
 
 * extern void XGM2_PCM_mixIntoRingBuffer(s8* pcm, vu8* ringbuf)

@@ -1,5 +1,5 @@
 #include <genesis.h>
-#include "xgm2_interface.h"
+#include "xgm2_pcm.h"
 
 // #define DEBUG_LOG
 
@@ -18,6 +18,18 @@ u8 XGM2_PCM_peek_ringbuf_writepos()
     return pos;
 }
 
+void XGM2_PCM_activate()
+{
+    SYS_disableInts();
+    Z80_getAndRequestBus(true);
+
+    *XGM2_DAC_ENABLE = 0x80;
+    *XGM2_DAC_ENABLED_CNT = 0x04;
+
+    Z80_releaseBus();
+    SYS_enableInts();
+}
+
 void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *pos, u8 *ringbufPosPrev)
 {
     u8 writePosPrev = *ringbufPosPrev;
@@ -26,6 +38,9 @@ void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *pos, u8 *ringbufPosPrev)
     // Request bus
     SYS_disableInts();
     Z80_getAndRequestBus(true);
+
+    *XGM2_DAC_ENABLE = 0x80;
+    *XGM2_DAC_ENABLED_CNT = 0x04;
 
     // Get current write pos
     vu8 writePos = *XGM2_PCM_RINGBUF_WRITEPOS_VAR;

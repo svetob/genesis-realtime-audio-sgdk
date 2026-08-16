@@ -25,6 +25,12 @@ u8 XGM2_PCM_peek_ringbuf_writepos();
 
 /**
  * \brief
+ *      Forces activation of XGM2 PCM output to DAC controller.
+ */
+void XGM2_PCM_activate();
+
+/**
+ * \brief
  *      Renders 64-byte chunks from PCM source onto all new unplayed 64-byte chunks in the XGM2 PCM
  * ring buffer.
  *

@@ -3,7 +3,7 @@
 
 int main(bool hard)
 {
-    testPCMStream8();
+    testPCMStream16();
 
     return 0;
 }

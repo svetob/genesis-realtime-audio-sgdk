@@ -1,7 +1,7 @@
 #include <genesis.h>
 #include "resources.h"
 #include "pcm_stream16.h"
-#include "xgm2_interface.h"
+#include "xgm2_pcm.h"
 
 // #define DEBUG_LOG
 
@@ -121,8 +121,10 @@ PCMStream16 *PCM_STREAM16_create(SoundPCMChannel channel)
 
 void PCM_STREAM16_reset(PCMStream16 *stream)
 {
-    // TODO if isplaying - stop
+    memsetU32(stream->render, 0, PCM_STREAM16_BUFFER_SIZE >> 2);
+    memsetU32(stream->buffer, 0, PCM_STREAM_LEN_SAMPLES >> 2);
 
+    stream->bufferPos = 0;
     stream->status = PCM_STREAM_STATUS_STOPPED;
     stream->pcm_sound = NULL;
     stream->pcm_remain = 0;
@@ -130,8 +132,6 @@ void PCM_STREAM16_reset(PCMStream16 *stream)
 
 void PCM_STREAM16_free(PCMStream16 *stream)
 {
-    // TODO: Check if playing, stop if so
-
     MEM_free(stream->buffer);
     MEM_free(stream);
 }
@@ -143,9 +143,6 @@ void PCM_STREAM16_start(PCMStream16 *stream)
     KLog("Render Buf0 on start");
 #endif
     renderStreamBuffer(getBuffer0(stream), stream);
-
-    // TODO Remove and replace with the correct XGM2 flag updates
-    XGM2_playPCMEx(wav_empty, 512, SOUND_PCM_CH3, 15, false, true);
 }
 
 void PCM_STREAM16_stop(PCMStream16 *stream)
