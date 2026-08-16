@@ -144,12 +144,12 @@ void PCM_STREAM16_start(PCMStream16 *stream)
 #endif
     renderStreamBuffer(getBuffer0(stream), stream);
 
+    // TODO Remove and replace with the correct XGM2 flag updates
     XGM2_playPCMEx(wav_empty, 512, SOUND_PCM_CH3, 15, false, true);
 }
 
 void PCM_STREAM16_stop(PCMStream16 *stream)
 {
-    // TODO Stop the empty PCM
     stream->status = PCM_STREAM_STATUS_STOPPED;
 }
 
@@ -174,7 +174,6 @@ void PCM_STREAM16_update(PCMStream16 *stream)
         stream->status = PCM_STREAM_STATUS_PLAYING_BUFFER0;
         if (statusPrev == PCM_STREAM_STATUS_PLAYING_BUFFER1 ||
             statusPrev == PCM_STREAM_STATUS_PLAYING_INIT) {
-            // Z80 has started playing buffer 0 - prepare buffer 1
 #ifdef DEBUG_LOG
             KLog("Render Buf1");
 #endif
@@ -184,7 +183,6 @@ void PCM_STREAM16_update(PCMStream16 *stream)
     } else {
         stream->status = PCM_STREAM_STATUS_PLAYING_BUFFER1;
         if (statusPrev == PCM_STREAM_STATUS_PLAYING_BUFFER0) {
-            // Z80 has started playing buffer 1 - prepare buffer 0
 #ifdef DEBUG_LOG
             KLog("Render Buf0");
 #endif

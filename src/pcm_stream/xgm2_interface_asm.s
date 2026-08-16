@@ -2,7 +2,7 @@
 #include "xgm2_interface_mac.i"
 
 
-* extern void XGM2_PCM_mixIntoRingBuffer(s8* pcm, u8* ringbuf)
+* extern void XGM2_PCM_mixIntoRingBuffer(s8* pcm, vu8* ringbuf)
 
 func    XGM2_PCM_mixIntoRingBuffer
 

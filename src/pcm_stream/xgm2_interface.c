@@ -3,7 +3,7 @@
 
 // #define DEBUG_LOG
 
-extern void XGM2_PCM_mixIntoRingBuffer(s8 *pcm, u8 *ringbuf);
+extern void XGM2_PCM_mixIntoRingBuffer(s8 *pcm, vu8 *ringbuf);
 
 u8 XGM2_PCM_peek_ringbuf_writepos()
 {
