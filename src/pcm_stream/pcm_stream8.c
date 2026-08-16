@@ -1,7 +1,7 @@
 #include <genesis.h>
-#include "const.h"
+#include "resources.h"
 #include "pcm_stream8.h"
-#include "util.h"
+#include "xgm2_pcm.h"
 
 // #define DEBUG_LOG
 
@@ -65,7 +65,7 @@ static void renderStreamBuffer(u8 *buf, PCMStream8 *stream)
 
         u8 *p_pcm = stream->pcm_sound;
         u8 *p_buf = buf;
-        while (process_len--) {
+        while (process_len--) { // TODO ASM
             *p_buf++ = *p_pcm++;
         }
 
@@ -90,14 +90,14 @@ static void renderStreamBuffer(u8 *buf, PCMStream8 *stream)
 
 PCMStream8 *PCM_STREAM_create(SoundPCMChannel channel)
 {
-    void *buf = MEM_alloc(PCM_STREAM8_SIZE + 256);
-    // TODO: Temp hack to ensure 256-byte aligned buffer
-    //       THIS __WILL__ BREAK FREEING THE MEMORY!! Must fix
-    buf = (void *) (((u32) buf + 256) & 0x00FFFF00);
+    void *buf = MEM_alloc(PCM_STREAM8_SIZE);
+    memsetU32(buf, 0, PCM_STREAM8_SIZE >> 2);
 
     PCMStream8 *stream = MEM_alloc(sizeof(PCMStream8));
     stream->buffer = buf;
-    stream->channel = channel;
+    stream->bufferPos = 0;
+    stream->ringbufPosPrev = XGM2_PCM_peek_ringbuf_writepos();
+
     stream->status = PCM_STREAM_STATUS_STOPPED;
 
     stream->inst_cb = NULL;
@@ -114,8 +114,9 @@ PCMStream8 *PCM_STREAM_create(SoundPCMChannel channel)
 
 void PCM_STREAM_reset(PCMStream8 *stream)
 {
-    // TODO if isplaying - stop
+    memsetU32(stream->buffer, 0, PCM_STREAM8_SIZE >> 2);
 
+    stream->bufferPos = 0;
     stream->status = PCM_STREAM_STATUS_STOPPED;
     stream->pcm_sound = NULL;
     stream->pcm_remain = 0;
@@ -123,23 +124,19 @@ void PCM_STREAM_reset(PCMStream8 *stream)
 
 void PCM_STREAM_free(PCMStream8 *stream)
 {
-    // TODO: Check if playing, stop if so
-
     MEM_free(stream->buffer);
     MEM_free(stream);
 }
 
 void PCM_STREAM_start(PCMStream8 *stream)
 {
-    stream->status = PCM_STREAM_STATUS_BUFFER0;
+    stream->status = PCM_STREAM_STATUS_PLAYING_INIT;
     renderStreamBuffer(getBuffer0(stream), stream);
-
-    XGM2_playPCMEx(stream->buffer, PCM_STREAM8_SIZE, stream->channel, 15, false, true);
+    XGM2_PCM_activate();
 }
 
 void PCM_STREAM_stop(PCMStream8 *stream)
 {
-    XGM2_stopPCM(stream->channel);
     stream->status = PCM_STREAM_STATUS_STOPPED;
 }
 
@@ -149,28 +146,21 @@ void PCM_STREAM_update(PCMStream8 *stream)
         return;
     }
 
-    u32 addr;
-    u16 len;
-    u8 isPlaying;
+    XGM2_PCM_mix_into_ringbuf(stream->buffer, &(stream->bufferPos), &(stream->ringbufPosPrev));
 
-    peek_XGM2_channel(stream->channel, &addr, &len, &isPlaying);
+    PCMStream8Status statusPrev = stream->status;
+    bool isBuffer0 = stream->bufferPos < 256;
 
 #ifdef DEBUG_LOG
-    KLog_U4("buf ", stream->buffer, ", addr ", (u32 *) addr, ", len ", len, ", isPlaying ",
-            isPlaying);
+    KLog_U4("buf ", stream->buffer, ", status ", stream->status, ", statusPrev", statusPrev,
+            ", isBuffer0 ", isBuffer0);
+    KLog_U2("bufferPos ", stream->bufferPos, ", ringbufPosPrev ", stream->ringbufPosPrev);
 #endif
 
-    if (!isPlaying) {
-        stream->status = PCM_STREAM_STATUS_STOPPED;
-    }
-
-    bool isBuffer0 = len > (PCM_STREAM8_BUFFER_SIZE / XGM2_PCM_CHUNK_SIZE);
-    PCMStreamStatus statusPrev = stream->status;
-
     if (isBuffer0) {
-        stream->status = PCM_STREAM_STATUS_BUFFER0;
-        if (statusPrev == PCM_STREAM_STATUS_BUFFER1) {
-            // Z80 has started playing buffer 0 - prepare buffer 1
+        stream->status = PCM_STREAM_STATUS_PLAYING_BUFFER0;
+        if (statusPrev == PCM_STREAM_STATUS_PLAYING_BUFFER1 ||
+            statusPrev == PCM_STREAM_STATUS_PLAYING_INIT) {
 #ifdef DEBUG_LOG
             KLog("Render Buf1");
 #endif
@@ -178,9 +168,8 @@ void PCM_STREAM_update(PCMStream8 *stream)
         }
 
     } else {
-        stream->status = PCM_STREAM_STATUS_BUFFER1;
-        if (statusPrev == PCM_STREAM_STATUS_BUFFER0) {
-            // Z80 has started playing buffer 1 - prepare buffer 0
+        stream->status = PCM_STREAM_STATUS_PLAYING_BUFFER1;
+        if (statusPrev == PCM_STREAM_STATUS_PLAYING_BUFFER0) {
 #ifdef DEBUG_LOG
             KLog("Render Buf0");
 #endif
@@ -202,7 +191,7 @@ void PCM_STREAM_setInstrumentCallback(PCMStreamInstrumentCallback *callback, voi
     stream->inst_cb_data = callbackData;
 }
 
-void PCM_STREAM_setProcessingCallback(PCMStreamProcessingCallback *callback, void *callbackData,
+void PCM_STREAM_setProcessingCallback(PCMStream8ProcessingCallback *callback, void *callbackData,
                                       PCMStream8 *stream)
 {
     stream->afx_cb = callback;

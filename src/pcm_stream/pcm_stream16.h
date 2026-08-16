@@ -60,15 +60,11 @@ typedef void PCMStream16ProcessingCallback(s16 *stream, u16 len, void *data);
  *      Sound PCM Stream data struct
  */
 typedef struct {
-    // Render buffer;
-    void *render;
-
-    // Output buffer
-    void *buffer;
-
-    // Channel status
-    SoundPCMChannel channel;
-    PCMStream16Status status;
+    void *render; // Render buffer;
+    void *buffer; // Output buffer
+    u16 bufferPos;
+    PCMStream16Status status; // Current playback status
+    u8 ringbufPosPrev;        // Previous ring buffer write position
 
     // AudioFX callback
     PCMStream16ProcessingCallback *afx_cb;
