@@ -41,18 +41,20 @@ static inline void doProcessingCallback(void *buf, PCMStream16 *stream)
 
 static inline void renderSoundsToStream(PCMStream16 *stream)
 {
+    if (stream->pcm_sound != NULL) {
 #ifdef DEBUG_LOG
-    KLog_U3("Playing sound stream16 - from 8bit PCM at ", stream->pcm_sound, ", to 16bit buf ",
-            stream->render, ", len remaining ", stream->pcm_remain);
+        KLog_U3("Playing sound stream16 - from 8bit PCM at ", stream->pcm_sound, ", to 16bit buf ",
+                stream->render, ", len remaining ", stream->pcm_remain);
 #endif
 
-    PCM_STREAM16_upscaleAndRenderSoundToStream_ASM(stream->pcm_sound, stream->render);
+        PCM_STREAM16_upscaleAndRenderSoundToStream_ASM(stream->pcm_sound, stream->render);
 
-    stream->pcm_remain -= PCM_STREAM_BUFFERLEN_SAMPLES;
-    if (stream->pcm_remain <= 0) {
-        stream->pcm_sound = NULL;
-    } else {
-        stream->pcm_sound += PCM_STREAM_BUFFERLEN_SAMPLES;
+        stream->pcm_remain -= PCM_STREAM_BUFFERLEN_SAMPLES;
+        if (stream->pcm_remain <= 0) {
+            stream->pcm_sound = NULL;
+        } else {
+            stream->pcm_sound += PCM_STREAM_BUFFERLEN_SAMPLES;
+        }
     }
 }
 
@@ -65,26 +67,13 @@ static void renderStreamBuffer(s8 *buf, PCMStream16 *stream)
 {
     s16 *render = stream->render;
 
-    // Clear if no sound playing, or if instrument is playing
-    // if (stream->pcm_sound == NULL || stream->inst_cb != NULL) {
 #ifdef DEBUG_LOG
     KLog_U2("Clearing render buffer at ", render, ", len ", PCM_STREAM16_BUFFER_SIZE);
 #endif
     memset(render, 0, PCM_STREAM16_BUFFER_SIZE);
-    //}
 
-    // Render instruments onto buffer
+    renderSoundsToStream(stream);
     doInstrumentCallback(render, stream);
-
-    if (stream->pcm_sound != NULL) {
-        // Render playing sound onto stream buffer
-#ifdef DEBUG_LOG
-        KLog_U3("Rendering sound ", stream->pcm_sound, " at ", render, ", remain ",
-                stream->pcm_remain);
-#endif
-        renderSoundsToStream(stream);
-    }
-
     doProcessingCallback(render, stream);
 
     PCM_STREAM16_renderToOutputBuffer_ASM(render, buf);

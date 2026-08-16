@@ -5,6 +5,8 @@
 
 // #define DEBUG_LOG
 
+extern void PCM_STREAM8_mixAndClip256_ASM(s8 *in, s8 *out);
+
 // ===========================
 // PRIVATE
 // ===========================
@@ -33,54 +35,40 @@ static inline void doProcessingCallback(void *buf, PCMStream8 *stream)
     }
 }
 
+static inline void renderSoundsToStream(PCMStream8 *stream)
+{
+    if (stream->pcm_sound != NULL) {
+#ifdef DEBUG_LOG
+        KLog_U3("Playing sound stream16 - from 8bit PCM at ", stream->pcm_sound, ", to 16bit buf ",
+                stream->render, ", len remaining ", stream->pcm_remain);
+#endif
+
+        PCM_STREAM8_mixAndClip256_ASM(stream->pcm_sound, stream->buffer);
+
+        stream->pcm_remain -= PCM_STREAM_BUFFERLEN_SAMPLES;
+        if (stream->pcm_remain <= 0) {
+            stream->pcm_sound = NULL;
+        } else {
+            stream->pcm_sound += PCM_STREAM_BUFFERLEN_SAMPLES;
+        }
+    }
+}
+
 /**
  * \brief
  *      Initial rendering of next stream buffer.<br>
- *      Renders currently playing sounds, otherwise clears buffer.
+ *      Renders currently playing sounds and instruments, then
+ *      applies the processing callback.
  */
 static void renderStreamBuffer(u8 *buf, PCMStream8 *stream)
 {
-    // Clear if no sound playing, or if instrument is playing
-    if (stream->pcm_sound == NULL || stream->inst_cb != NULL) {
 #ifdef DEBUG_LOG
-        KLog_U2("Clearing at ", buf, ", len ", len);
+    KLog_U2("Clearing at ", buf, ", len ", len);
 #endif
-        memset(buf, 0, PCM_STREAM8_BUFFER_SIZE);
-    }
+    memset(buf, 0, PCM_STREAM8_BUFFER_SIZE);
 
-    // Render instruments onto buffer
+    renderSoundsToStream(stream);
     doInstrumentCallback(buf, stream);
-
-    if (stream->pcm_sound != NULL) {
-        // Render playing sound onto stream buffer
-#ifdef DEBUG_LOG
-        KLog_U3("Rendering sound ", stream->pcm_sound, " at ", buf, ", remain ",
-                stream->pcm_remain);
-#endif
-        int pcm_len = stream->pcm_remain;
-        int process_len = pcm_len > PCM_STREAM8_BUFFER_SIZE ? PCM_STREAM8_BUFFER_SIZE : pcm_len;
-        int len_remain = PCM_STREAM8_BUFFER_SIZE - process_len;
-
-        stream->pcm_remain -= process_len;
-
-        u8 *p_pcm = stream->pcm_sound;
-        u8 *p_buf = buf;
-        while (process_len--) { // TODO ASM
-            *p_buf++ = *p_pcm++;
-        }
-
-        // Clear remainder after finished sound
-        if (len_remain > 0) {
-            memset(p_buf, 0, len_remain);
-        }
-
-        if (stream->pcm_remain == 0) {
-            stream->pcm_sound = NULL;
-        } else {
-            stream->pcm_sound += PCM_STREAM8_BUFFER_SIZE;
-        }
-    }
-
     doProcessingCallback(buf, stream);
 }
 

@@ -1,5 +1,5 @@
-#ifndef __PCM_STREAM_UTIL_H
-#define __PCM_STREAM_UTIL_H
+#ifndef __XGM2_PCM_H
+#define __XGM2_PCM_H
 
 #include <genesis.h>
 

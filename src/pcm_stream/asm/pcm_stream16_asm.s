@@ -24,7 +24,7 @@ pcms16_renderout_return:
         rts
 
 
-* extern void PCM_STREAM16_upscaleAndRenderSoundToStream_ASM(s8* pcm, s16* extern void PCM_STREAM16_upscaleAndRenderSoundToStream_ASM(s8 *pcm, s16 *render);
+* extern void PCM_STREAM16_upscaleAndRenderSoundToStream_ASM(s8 *pcm, s16 *render);
 
 func    PCM_STREAM16_upscaleAndRenderSoundToStream_ASM
         movem.l a0-a2/d0-d3,-(sp)
@@ -50,7 +50,7 @@ pcms16_upscalerender_loop:
 .L1:
         PCM_STREAM16_upscaleAndRenderSoundToStream_doProcess16
 
-        subq    #1,d3
+        subq.b  #1,d3
         bne     .L1
 
 pcms16_upscalerender_return:
