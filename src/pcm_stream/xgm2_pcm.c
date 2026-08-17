@@ -1,14 +1,24 @@
 #include <genesis.h>
 #include "xgm2_pcm.h"
 
+// Uncomment to enable GensKmod debug logging
 // #define DEBUG_LOG
+
+// Fast custom bus accesses save about 4 scanlines
+// Comment out to use default SGDK bus access functions
+#define XGM2_PCM_FAST
+
+// ===========================
+// PRIVATE
+// ===========================
+
+#ifdef XGM2_PCM_FAST
 
 u16 intsPrev;
 extern u16 XGM2_PCM_SYS_disableInts_fast_noStack();
 extern void XGM2_PCM_SYS_enableInts_fast_noStack(u16 intsPrev);
-extern void XGM2_PCM_mixIntoRingBuffer(s8 *pcm, vu8 *ringbuf);
 
-static inline void ZZ80_getAndRequestBus()
+static inline void XGM2_PCM_Z80_getAndRequestBus_fast()
 {
     // take bus and end reset
     *((vu16 *) Z80_HALT_PORT) = 0x0100;
@@ -19,7 +29,7 @@ static inline void ZZ80_getAndRequestBus()
         ;
 }
 
-static inline void ZZ80_releaseBus()
+static inline void XGM2_PCM_Z80_releaseBus_fast()
 {
     *((u16 *) Z80_HALT_PORT) = 0x0000;
 }
@@ -27,14 +37,36 @@ static inline void ZZ80_releaseBus()
 static inline void enterBus()
 {
     intsPrev = XGM2_PCM_SYS_disableInts_fast_noStack();
-    ZZ80_getAndRequestBus(true);
+    XGM2_PCM_Z80_getAndRequestBus_fast();
 }
 
 static inline void exitBus()
 {
-    ZZ80_releaseBus();
+    XGM2_PCM_Z80_releaseBus_fast();
     XGM2_PCM_SYS_enableInts_fast_noStack(intsPrev);
 }
+
+#else
+
+static inline void enterBus()
+{
+    SYS_disableInts();
+    Z80_getAndRequestBus(true);
+}
+
+static inline void exitBus()
+{
+    Z80_releaseBus();
+    SYS_enableInts();
+}
+
+#endif // XGM2_PCM_FAST
+
+// ===========================
+// PUBLIC
+// ===========================
+
+extern void XGM2_PCM_mixIntoRingBuffer(s8 *pcm, vu8 *ringbuf);
 
 u8 XGM2_PCM_peek_ringbuf_writepos()
 {

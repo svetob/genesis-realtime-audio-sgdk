@@ -88,6 +88,8 @@ void testPCMStream8()
 
     SYS_showFrameLoad(false);
 
+    XGM2_play(vgm_test);
+
     playStream();
 
     while (true) {
@@ -95,20 +97,22 @@ void testPCMStream8()
 
         scanlines = 0;
 
-        vu16 i = 400;
-        while (i--) {
-        }
-
         if (pcm_stream != NULL) {
             updateStream();
 
-            i = 400;
+            vu16 i = 300;
             while (i--) {
             }
 
             updateStream();
 
-            i = 400;
+            i = 300;
+            while (i--) {
+            }
+
+            updateStream();
+
+            i = 300;
             while (i--) {
             }
 

@@ -12,7 +12,7 @@ build: clean
 asm:
 	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makefile.gen asm
 
-# Convert GCC's AT&T syntax to Motorola syntax for 68K Counter extension
+# To debug generated ASM, run `make clean build asm-motorola`
 asm-motorola: asm
 	@python3 tools/lst2motorola.py $(OUT)
 
