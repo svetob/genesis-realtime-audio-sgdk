@@ -1,16 +1,16 @@
-SGDK_PATH := D:\Gamedev\Genesis\SGDK
-MAME_PATH := D:\Gamedev\Genesis\Emulators\Mame
+export GDK ?= /opt/toolchains/mars/m68k-elf
+include $(GDK)/makefile.gen
+export GENESIS_DEV = ~/gamedev/genesis
 
 OUT := out
 
-clean:
-	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makefile.gen clean
+build: all
 
-build: clean
-	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makefile.gen
+run:
+	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem out/rom.bin > /dev/null &
 
-asm:
-	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makefile.gen asm
+run-debug:
+	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem -d out/rom.bin
 
 # To debug generated ASM, run `make clean build asm-motorola`
 asm-motorola: asm
@@ -21,6 +21,9 @@ build-sgdk:
 
 debug-mame: build
 	$(MAME_PATH)\mame.exe genesis -cart $(OUT)\rom.bin -debug
+
+run-blastem: all asm-motorola run
+debug-blastem: debug asm-motorola run-debug
 
 # Format and lint using clang-format
 SRC_FILES := $(wildcard src/*.c src/*.h src/*/*.c src/*/*.h src/*/*/*.c src/*/*/*.h)

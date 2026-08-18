@@ -25,7 +25,7 @@
         andi.l  #0x7F7F7F7F,d4
         add.l   d6,d4
 
-* Now mix
+* Now mix  TODO: Use clipping mixing
         add.l   d4,d3
 
 * --Write result to out and line
