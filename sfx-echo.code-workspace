@@ -1,22 +1,25 @@
 {
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../../SGDK"
-		}
-	],
-	"settings": {
-		"terminal.integrated.defaultProfile.windows": "Command Prompt",
-		"C_Cpp.errorSquiggles": "enabled",
-		"C_Cpp.files.exclude": {
-			"**/SGDK/tools/**": true,
-			"**/.git": true
-		},
-		"m68k.vasm.provideDiagnostics": false,
-		"[m68k]": {
-			"editor.rulers": []
-		}
-	}
+  "folders": [
+    {
+      "path": ".",
+    },
+    {
+      "path": "../../SGDK",
+    },
+    {
+      "path": "../../marsdev",
+    },
+  ],
+  "settings": {
+    "terminal.integrated.defaultProfile.windows": "Command Prompt",
+    "C_Cpp.errorSquiggles": "enabled",
+    "C_Cpp.files.exclude": {
+      "**/SGDK/tools/**": true,
+      "**/.git": true,
+    },
+    "m68k.vasm.provideDiagnostics": false,
+    "[m68k]": {
+      "editor.rulers": [],
+    },
+  },
 }

@@ -1,0 +1,35 @@
+export GDK ?= /opt/toolchains/mars/m68k-elf
+include $(GDK)/makefile.gen
+export GENESIS_DEV = ~/gamedev/genesis
+
+OUT := out
+
+build: all
+
+run:
+	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem out/rom.bin > /dev/null &
+
+run-debug:
+	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem -d out/rom.bin
+
+# To debug generated ASM, run `make clean build asm-motorola`
+asm-motorola: asm
+	@python3 tools/lst2motorola.py $(OUT)
+
+build-sgdk:
+	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makelib.gen
+
+debug-mame: build
+	$(MAME_PATH)\mame.exe genesis -cart $(OUT)\rom.bin -debug
+
+run-blastem: all asm-motorola run
+debug-blastem: debug asm-motorola run-debug
+
+# Format and lint using clang-format
+SRC_FILES := $(wildcard src/*.c src/*.h src/*/*.c src/*/*.h src/*/*/*.c src/*/*/*.h)
+
+format:
+	clang-format -i $(SRC_FILES)
+
+format-check:
+	clang-format --dry-run --Werror $(SRC_FILES)
