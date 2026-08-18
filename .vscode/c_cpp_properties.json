@@ -1,32 +1,48 @@
 {
-    "configurations": [
-        {
-            "name": "sgdk",
-            "includePath": [
-                "${workspaceFolder}\\..\\..\\SGDK\\inc",
-                "${workspaceFolder}\\..\\..\\SGDK\\res",
-                "${workspaceFolder}\\inc",
-                "${workspaceFolder}\\res",
-                "${workspaceFolder}\\src"
-            ],
-            "defines": [],
-            "compilerPath": "${workspaceFolder}\\..\\..\\SGDK\\bin\\gcc.exe",
-            "compilerArgs": [
-                "-m68000",
-                "-B${workspaceFolder}\\..\\..\\SGDK\\bin",
-                "-Wall"
-            ],
-            "cStandard": "gnu11",
-            "intelliSenseMode": "linux-gcc-x86",
-            "browse": {
-                "path": [
-                    "${workspaceFolder}\\src",
-                    "${workspaceFolder}\\inc",
-                    "${workspaceFolder}\\..\\..\\SGDK\\inc"
-                ],
-                "limitSymbolsToIncludedHeaders": true
-            }
-        }
-    ],
-    "version": 4
+  "configurations": [
+    {
+      "name": "sgdk",
+      "includePath": [
+        "${workspaceFolder}\\..\\..\\SGDK\\inc",
+        "${workspaceFolder}\\..\\..\\SGDK\\res",
+        "${workspaceFolder}\\inc",
+        "${workspaceFolder}\\res",
+        "${workspaceFolder}\\src"
+      ],
+      "defines": [],
+      "compilerPath": "${workspaceFolder}\\..\\..\\SGDK\\bin\\gcc.exe",
+      "compilerArgs": [
+        "-m68000",
+        "-B${workspaceFolder}\\..\\..\\SGDK\\bin",
+        "-Wall"
+      ],
+      "cStandard": "gnu11",
+      "intelliSenseMode": "linux-gcc-x86",
+      "browse": {
+        "path": [
+          "${workspaceFolder}\\src",
+          "${workspaceFolder}\\inc",
+          "${workspaceFolder}\\..\\..\\SGDK\\inc"
+        ],
+        "limitSymbolsToIncludedHeaders": true
+      }
+    },
+    {
+      "name": "Mac",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "/Users/tobsve/gamedev/genesis/marsdev/mars/m68k-elf/lib/gcc/m68k-elf/15.1.0/include",
+        "/Users/tobsve/gamedev/genesis/marsdev/mars/m68k-elf/include",
+        "/Users/tobsve/gamedev/genesis/marsdev/mars/m68k-elf/inc",
+        "/Users/tobsve/gamedev/genesis/marsdev/mars/m68k-elf/res",
+        "/Users/tobsve/gamedev/genesis/marsdev/mars/m68k-elf/m68k-elf/include"
+      ],
+      "defines": [],
+      "compilerPath": "/usr/bin/clang",
+      "cStandard": "c17",
+      "cppStandard": "c++14",
+      "intelliSenseMode": "macos-gcc-arm64"
+    }
+  ],
+  "version": 4
 }

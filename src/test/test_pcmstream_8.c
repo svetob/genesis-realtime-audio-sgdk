@@ -14,7 +14,8 @@ static PCMStream8 *pcm_stream = NULL;
 static AFX8Echo *afx_echo = NULL;
 // static InstrSaw *inst_saw = NULL;
 
-static u16 scanlines = 0;
+static u16 scanlines[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static u8 scanlines_pos = 0;
 
 static void streamProcessingCallback(s8 *stream, u16 len, void *data)
 {
@@ -47,7 +48,7 @@ static void updateStream()
 {
     scanlineTimerStart();
     PCM_STREAM_update(pcm_stream);
-    scanlines += scanlineTimerStop();
+    scanlines[scanlines_pos] += scanlineTimerStop();
 }
 
 static void resetStream()
@@ -95,7 +96,7 @@ void testPCMStream8()
     while (true) {
         SYS_doVBlankProcess();
 
-        scanlines = 0;
+        scanlines[scanlines_pos] = 0;
 
         if (pcm_stream != NULL) {
             updateStream();
@@ -119,6 +120,14 @@ void testPCMStream8()
             updateStream();
         }
 
-        logNamedU16("SCANLINES USED", scanlines, 1, 20, 3);
+        u16 scanlines_avg = 0;
+        for (u8 i = 0; i < 16; i++) {
+            scanlines_avg += scanlines[i];
+        }
+        scanlines_avg = scanlines_avg >> 4;
+
+        logNamedU16("SCANLINES USED (AVG)", scanlines_avg, 1, 20, 3);
+
+        scanlines_pos = (scanlines_pos + 1) & 0x0F;
     }
 }
