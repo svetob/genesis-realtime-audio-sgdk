@@ -67,6 +67,7 @@ static inline void exitBus()
 // ===========================
 
 extern void XGM2_PCM_mixIntoRingBuffer(s8 *pcm, vu8 *ringbuf);
+extern void XGM2_PCM_mixIntoRingBuffer_withOverflowProtection(s8 *pcm, vu8 *ringbuf);
 
 u8 XGM2_PCM_peek_ringbuf_writepos()
 {
@@ -112,7 +113,7 @@ void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *pos, u8 *ringbufPosPrev)
         KLog_U2("Mix from ", read, " to ", write);
 #endif
 
-        XGM2_PCM_mixIntoRingBuffer(read, write);
+        XGM2_PCM_mixIntoRingBuffer_withOverflowProtection(read, write);
 
         writePosPrev += 0x40;
         posAt = (posAt + 0x40) & 0x01FF;

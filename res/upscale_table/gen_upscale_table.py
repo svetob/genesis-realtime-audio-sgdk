@@ -1,4 +1,7 @@
-out_file = "upscale.bin"
+import os
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+out_file = os.path.join(script_dir, "upscale.bin")
 
 # Upscales from 8bit to 16bit.
 # Assumes 5 bits of decimal, 3 bits headroom

@@ -1,7 +1,7 @@
 #include <genesis.h>
 #include "log.h"
 
-static char logbuf[20];
+static char logbuf[40];
 
 void logU8H(u8 val, u16 x, u16 y)
 {

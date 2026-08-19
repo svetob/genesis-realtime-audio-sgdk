@@ -1,4 +1,7 @@
-out_file = "downscale.bin"
+import os
+
+script_dir = os.path.dirname(os.path.abspath(__file__))
+out_file = os.path.join(script_dir, "downscale.bin")
 
 # Downscales from 16bit to 8bit.
 # Assumes 5 bits of decimal, 3 bits headroom

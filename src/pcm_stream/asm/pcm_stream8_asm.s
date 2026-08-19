@@ -13,7 +13,7 @@ pcms8_renderpcm_init:
         * renderBuf -> a1
         movea.l 24(sp),a1
 
-        lea     mixandclip_8bit_table,a2
+        lea     mixandclip_s8_table,a2
 
         * inSample -> d0
         move.w  #0,d0
