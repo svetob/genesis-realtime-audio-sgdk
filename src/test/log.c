@@ -33,6 +33,22 @@ void logS16(s16 val, u16 x, u16 y, u16 minsize)
     VDP_drawText(logbuf, x, y);
 }
 
+void logNamedU32H(const char *name, u32 val, u16 x, u16 y)
+{
+    VDP_drawText(name, x, y);
+    VDP_drawText(":", x + strlen(name), y);
+    intToHex(val, logbuf, 8);
+    VDP_drawText(logbuf, x + strlen(name) + 2, y);
+}
+
+void logNamedU32(const char *name, u32 val, u16 x, u16 y, u16 minsize)
+{
+    VDP_drawText(name, x, y);
+    VDP_drawText(":", x + strlen(name), y);
+    intToStr(val, logbuf, minsize);
+    VDP_drawText(logbuf, x + strlen(name) + 2, y);
+}
+
 void logNamedU16H(const char *name, u16 val, u16 x, u16 y)
 {
     VDP_drawText(name, x, y);

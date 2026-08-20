@@ -1,4 +1,3 @@
-
 ## Z80 RAM access
 
 Z80 can write but _not read_ RAM on hardware - reads return 0xFF.
@@ -29,9 +28,13 @@ XGM2 ring buffer is 256 samples. It is cleared and rerendered every 64 samples.
 
 Ring buffer samples per frame is:
 NTSC = 13.3khz / 60hz = 221
-PAL  = 13.3khz / 50hz = 266
+PAL = 13.3khz / 50hz = 266
 
 This means:
 
 - On NTSC we can prefill the buffer each frame.
 - On PAL we need to re-check mid-screen somehow.
+
+## YM2612 details
+
+https://jsgroth.dev/blog/posts/emulating-ym2612-part-4/

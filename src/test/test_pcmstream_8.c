@@ -2,6 +2,7 @@
 #include "resources.h"
 #include "../inst/saw.h"
 #include "../audiofx/echo8.h"
+#include "../audiofx/filter_lp8.h"
 #include "../pcm_stream/pcm_stream8.h"
 
 #include "log.h"
@@ -12,6 +13,7 @@
 
 static PCMStream8 *pcm_stream = NULL;
 static AFX8Echo *afx_echo = NULL;
+static AFX8FilterLP *filter_lp = NULL;
 // static InstrSaw *inst_saw = NULL;
 
 static u16 scanlines[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -20,6 +22,7 @@ static u8 scanlines_pos = 0;
 static void streamProcessingCallback(s8 *stream, u16 len, void *data)
 {
     AFX8_echo_process256((s8 *) stream, afx_echo);
+    AFX8_filter_lp_process((s8 *) stream, filter_lp);
 }
 
 static void playStream()
@@ -34,6 +37,10 @@ static void playStream()
 
     if (afx_echo == NULL) {
         afx_echo = AFX8_echo_create(ECHO_DELAY_SAMPLES);
+    }
+
+    if (filter_lp == NULL) {
+        filter_lp = AFX8_filter_lp_create(800, 45875);
     }
 
     // if (inst_saw == NULL) {
@@ -89,7 +96,7 @@ void testPCMStream8()
 
     SYS_showFrameLoad(false);
 
-    XGM2_play(vgm_test);
+    // XGM2_play(vgm_test);
 
     playStream();
 
