@@ -10,7 +10,6 @@
         add.w   d1,d2
 
         move.b  (a2,d2.w),(a1)+
-
 .endm
 
 .macro  pcms8_renderpcm_do16

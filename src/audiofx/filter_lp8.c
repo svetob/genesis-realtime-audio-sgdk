@@ -7,7 +7,7 @@
 #define DEBUG_LOG
 // #define DEBUG_LOG_TRACE
 
-extern void AFX8_filter_lp_process256_ASM(s8 *samples, void *mult_table_f_dec,
+extern void AFX8_filter_lp_process256_ASM(s8 *samples, u16 len, void *mult_table_f_dec,
                                           void *mult_table_fb_int, void *mult_table_fb_dec,
                                           s8 *buf0, s8 *buf1);
 
@@ -94,8 +94,8 @@ void AFX8_filter_lp_free(AFX8FilterLP *filter)
     MEM_free(filter);
 }
 
-void AFX8_filter_lp_process(s8 *samples, AFX8FilterLP *filter)
+void AFX8_filter_lp_process(s8 *samples, u16 len, AFX8FilterLP *filter)
 {
-    AFX8_filter_lp_process256_ASM(samples, filter->mul_table_f_dec, filter->mul_table_fb_int,
+    AFX8_filter_lp_process256_ASM(samples, len, filter->mul_table_f_dec, filter->mul_table_fb_int,
                                   filter->mul_table_fb_dec, &(filter->buf0), &(filter->buf1));
 }

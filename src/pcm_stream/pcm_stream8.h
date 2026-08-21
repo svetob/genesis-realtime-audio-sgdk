@@ -10,9 +10,8 @@
  *      Current playback status of stream
  */
 typedef enum {
-    PCM_STREAM_STATUS_STOPPED = 0, // Stream is stopped
-    // TODO Add to stream8, vital fix
-    PCM_STREAM_STATUS_PLAYING_INIT = 1,    // Stream has just started playing
+    PCM_STREAM_STATUS_STOPPED = 0,         // Stream is stopped
+    PCM_STREAM_STATUS_PLAYING = 1,         // Stream has just started playing
     PCM_STREAM_STATUS_PLAYING_BUFFER0 = 2, // First buffer of stream is playing
     PCM_STREAM_STATUS_PLAYING_BUFFER1 = 3, // Second buffer of stream is playing
 } PCMStream8Status;
@@ -63,8 +62,9 @@ typedef void PCMStream8ProcessingCallback(s8 *stream, u16 len, void *data);
 typedef struct {
     void *buffer; // Output buffer
     u16 bufferPos;
-    PCMStream8Status status; // Current playback status
-    u8 ringbufPosPrev;       // Previous ring buffer write position
+    u16 bufferPosPrev;
+    u8 ringbufPos;  // Previous ring buffer write position
+    bool isPlaying; // Current playback status
 
     // AudioFX callback
     PCMStream8ProcessingCallback *afx_cb;

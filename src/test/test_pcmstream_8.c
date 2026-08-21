@@ -14,7 +14,6 @@
 static PCMStream8 *pcm_stream = NULL;
 static AFX8Echo *afx_echo = NULL;
 static AFX8FilterLP *filter_lp = NULL;
-// static InstrSaw *inst_saw = NULL;
 
 static u16 scanlines[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static u8 scanlines_pos = 0;
@@ -22,8 +21,8 @@ static u16 frameCtr = 0;
 
 static void streamProcessingCallback(s8 *stream, u16 len, void *data)
 {
-    AFX8_echo_process256((s8 *) stream, afx_echo);
-    AFX8_filter_lp_process((s8 *) stream, filter_lp);
+    AFX8_echo_process((s8 *) stream, len, afx_echo);
+    AFX8_filter_lp_process((s8 *) stream, len, filter_lp);
 }
 
 static void playStream()
@@ -42,13 +41,8 @@ static void playStream()
 
     if (filter_lp == NULL) {
         // filter_lp = AFX8_filter_lp_create(2000, 45875);
-        filter_lp = AFX8_filter_lp_create(400, 10000);
+        filter_lp = AFX8_filter_lp_create(800, 10000);
     }
-
-    // if (inst_saw == NULL) {
-    //     inst_saw = INST_saw_create(1);
-    //     PCM_STREAM_setInstrumentCallback(INST_saw_play, inst_saw, pcm_stream);
-    // }
 
     PCM_STREAM_start(pcm_stream);
 }
@@ -73,8 +67,8 @@ static void resetStream()
 
 static void playSound()
 {
+    // PCM_STREAM_playSound((u8 *) wav_snare_rim, sizeof(wav_snare_rim), pcm_stream);
     PCM_STREAM_playSound((u8 *) wav_saw_sweep, sizeof(wav_saw_sweep), pcm_stream);
-    // PCM_STREAM_setInstrumentCallback(NULL, NULL, pcm_stream);
 }
 
 static void handleInput(u16 joy, u16 changed, u16 state)
@@ -114,19 +108,13 @@ void testPCMStream8()
             while (i--) {
             }
 
-            updateStream(true);
-
-            i = 300;
-            while (i--) {
-            }
-
-            updateStream(true);
-
-            i = 300;
-            while (i--) {
-            }
-
             updateStream(false);
+
+            // i = 300;
+            // while (i--) {
+            // }
+
+            // updateStream(false);x
         }
 
         u16 scanlines_avg = 0;
@@ -135,8 +123,8 @@ void testPCMStream8()
         }
         scanlines_avg = scanlines_avg >> 4;
 
-        logNamedU16("SCANLINES USED (AVG)", scanlines_avg, 1, 20, 3);
-        logNamedU16("FRAMES", ++frameCtr, 1, 21, 4);
+        logNamedU16("FRAMES", ++frameCtr, 1, 26, 4);
+        logNamedU16("SCANLINES USED (AVG)", scanlines_avg, 1, 27, 3);
 
         scanlines_pos = (scanlines_pos + 1) & 0x0F;
     }

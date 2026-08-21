@@ -64,7 +64,7 @@ typedef struct {
     void *buffer; // Output buffer
     u16 bufferPos;
     PCMStream16Status status; // Current playback status
-    u8 ringbufPosPrev;        // Previous ring buffer write position
+    u8 ringbufPos;            // Previous ring buffer write position
 
     // AudioFX callback
     PCMStream16ProcessingCallback *afx_cb;

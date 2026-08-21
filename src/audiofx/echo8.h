@@ -38,6 +38,6 @@ void AFX8_echo_free(AFX8Echo *afx);
  * \param afx
  *      8-bit Echo Audio Effect
  */
-void AFX8_echo_process256(s8 *samples, AFX8Echo *afx);
+void AFX8_echo_process(s8 *samples, u16 len, AFX8Echo *afx);
 
 #endif

@@ -90,10 +90,10 @@ void XGM2_PCM_activate()
     exitBus();
 }
 
-void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *pos, u8 *ringbufPosPrev)
+void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *bufPos, u8 *ringbufPos)
 {
-    u8 writePosPrev = *ringbufPosPrev;
-    u16 posAt = *pos;
+    u8 writePosPrev = *ringbufPos;
+    u16 posAt = *bufPos;
 
     enterBus();
 
@@ -122,6 +122,6 @@ void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *pos, u8 *ringbufPosPrev)
     exitBus();
 
     // Update output variables
-    *pos = posAt;
-    *ringbufPosPrev = writePos;
+    *bufPos = posAt;
+    *ringbufPos = writePos;
 }
