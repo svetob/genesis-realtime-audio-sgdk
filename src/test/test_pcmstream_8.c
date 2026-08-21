@@ -42,7 +42,7 @@ static void playStream()
 
     if (filter_lp == NULL) {
         // filter_lp = AFX8_filter_lp_create(2000, 45875);
-        filter_lp = AFX8_filter_lp_create(2000, 10000);
+        filter_lp = AFX8_filter_lp_create(400, 10000);
     }
 
     // if (inst_saw == NULL) {

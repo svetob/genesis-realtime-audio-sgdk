@@ -44,7 +44,7 @@ afx8_filter_lp_init:
 afx8_filter_lp_loop:
 
 .L1:
-        afx8_filter_lp_doProcess16
+        afx8_filter_lp_1pole_doProcess16
     
 afx8_filter_lp_loop_dbra:
         sub.w  #1,d3

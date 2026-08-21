@@ -1,4 +1,5 @@
-.macro afx8_filter_lp_doProcess1
+* 96 cycles per sample
+.macro afx8_filter_lp_2pole_resonant_doProcess1
         * Read sample
         move.b (a0),d2
         * calc1 = buf0 - buf1
@@ -29,24 +30,59 @@
         move.b d1,(a0)+
 .endm
 
-.macro afx8_filter_lp_doProcess16
-        afx8_filter_lp_doProcess1
-        afx8_filter_lp_doProcess1
-        afx8_filter_lp_doProcess1
-        afx8_filter_lp_doProcess1
+.macro afx8_filter_lp_2pole_resonant_doProcess16
+        afx8_filter_lp_2pole_resonant_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
 
-        afx8_filter_lp_doProcess1
-        afx8_filter_lp_doProcess1
-        afx8_filter_lp_doProcess1
-        afx8_filter_lp_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
 
-        afx8_filter_lp_doProcess1
-        afx8_filter_lp_doProcess1
-        afx8_filter_lp_doProcess1
-        afx8_filter_lp_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
 
-        afx8_filter_lp_doProcess1
-        afx8_filter_lp_doProcess1
-        afx8_filter_lp_doProcess1
-        afx8_filter_lp_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
+        afx8_filter_lp_2pole_resonant_doProcess1
+.endm
+
+* 34 cycles per sample
+.macro afx8_filter_lp_1pole_doProcess1
+        * Read sample
+        move.b (a0),d2
+        * in -= buf0
+        sub.b  d0,d2
+
+        * buf0 += f * in
+        add.b (a1,d2.w),d0
+        * Output sample (buf0 -> samplePtr++)
+        move.b d0,(a0)+
+.endm
+
+.macro afx8_filter_lp_1pole_doProcess16
+        afx8_filter_lp_1pole_doProcess1
+        afx8_filter_lp_1pole_doProcess1
+        afx8_filter_lp_1pole_doProcess1
+        afx8_filter_lp_1pole_doProcess1
+
+        afx8_filter_lp_1pole_doProcess1
+        afx8_filter_lp_1pole_doProcess1
+        afx8_filter_lp_1pole_doProcess1
+        afx8_filter_lp_1pole_doProcess1
+
+        afx8_filter_lp_1pole_doProcess1
+        afx8_filter_lp_1pole_doProcess1
+        afx8_filter_lp_1pole_doProcess1
+        afx8_filter_lp_1pole_doProcess1
+
+        afx8_filter_lp_1pole_doProcess1
+        afx8_filter_lp_1pole_doProcess1
+        afx8_filter_lp_1pole_doProcess1
+        afx8_filter_lp_1pole_doProcess1
 .endm
