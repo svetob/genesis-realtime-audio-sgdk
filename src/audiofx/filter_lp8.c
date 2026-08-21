@@ -1,10 +1,15 @@
 #include <genesis.h>
+#include "pcm_stream.h"
 #include "filter_lp8.h"
 #include "../pcm_stream/const.h"
 #include "../test/log.h"
 
 #define DEBUG_LOG
 // #define DEBUG_LOG_TRACE
+
+extern void AFX8_filter_lp_process256_ASM(s8 *samples, void *mult_table_f_dec,
+                                          void *mult_table_fb_int, void *mult_table_fb_dec,
+                                          s8 *buf0, s8 *buf1);
 
 /*
 //set feedback amount given f and q between 0 and 1
@@ -30,23 +35,23 @@ q = 0.7 * 65536 = 45875
 fb = 45875 + (45875 * 65536) / (65536 - 7884) = 45875 + 3006464000 / 57652 = 45875 + 52148 = 98023
 */
 
-u32 calculateFeedback(s32 f, s32 q)
+u32 calculateFeedback(u32 f, s32 q)
 {
-    s32 divisor = (65536 - f);
-    s32 fb = q + ((q << 16) / divisor);
+    u32 divisor = (65536 - f);
+    u32 fb = q + ((q << 16) / divisor);
 
 #ifdef DEBUG_LOG
     KLog_U3("Feedback is ", fb, ", f ", f, ", q ", q);
-    logNamedU32("F ", f, 20, 1, 1);
-    logNamedU32("Q ", q, 20, 2, 1);
-    logNamedU32("DV", divisor, 20, 3, 1);
-    logNamedU32("FB", fb, 20, 4, 1);
+    logNamedU32("F ", f, 1, 1, 1);
+    logNamedU32("Q ", q, 1, 2, 1);
+    logNamedU32("DV", divisor, 1, 3, 1);
+    logNamedU32("FB", fb, 1, 4, 1);
 #endif
 
     return fb;
 }
 
-AFX8FilterLP *AFX8_filter_lp_create(s32 cutoffFreq, s32 q)
+AFX8FilterLP *AFX8_filter_lp_create(u32 cutoffFreq, s32 q)
 {
     if (cutoffFreq < 20) {
         cutoffFreq = 20;
@@ -55,8 +60,7 @@ AFX8FilterLP *AFX8_filter_lp_create(s32 cutoffFreq, s32 q)
         cutoffFreq = (PCM_PLAYBACK_RATE / 2);
     }
 
-    logNamedU32("cut", cutoffFreq, 20, 0, 1);
-    s32 f = (cutoffFreq << 16) / (PCM_PLAYBACK_RATE / 2);
+    u32 f = (cutoffFreq << 16) / (PCM_PLAYBACK_RATE / 2);
 
     AFX8FilterLP *filter = (AFX8FilterLP *) MEM_alloc(sizeof(AFX8FilterLP));
     filter->f = f;
@@ -64,6 +68,23 @@ AFX8FilterLP *AFX8_filter_lp_create(s32 cutoffFreq, s32 q)
     filter->fb = calculateFeedback(f, q);
     filter->buf0 = 0;
     filter->buf1 = 0;
+
+    filter->mul_table_f_dec = mult_s8_dec + (filter->f & 0x0000FF00);
+
+    filter->mul_table_fb_int = mult_s8_int + ((filter->fb & 0x00FF0000) >> 8);
+    filter->mul_table_fb_dec = mult_s8_dec + (filter->fb & 0x0000FF00);
+
+#ifdef DEBUG_LOG
+    logNamedU32("cut", cutoffFreq, 15, 1, 1);
+    logNamedPtr("mult int", mult_s8_int, 15, 2);
+    logNamedPtr("mult dec", mult_s8_dec, 15, 3);
+    logNamedU32H("f index dec", filter->f & 0x0000FF00, 15, 4);
+    logNamedU32H("b index inc", ((filter->fb & 0x00FF0000) >> 8), 15, 5);
+    logNamedU32H("b index dec", filter->fb & 0x0000FF00, 15, 6);
+    logNamedPtr("mult f  dec", filter->mul_table_f_dec, 15, 7);
+    logNamedPtr("mult fb int", filter->mul_table_fb_int, 15, 8);
+    logNamedPtr("mult fb dec", filter->mul_table_fb_dec, 15, 9);
+#endif
 
     return filter;
 }
@@ -75,35 +96,6 @@ void AFX8_filter_lp_free(AFX8FilterLP *filter)
 
 void AFX8_filter_lp_process(s8 *samples, AFX8FilterLP *filter)
 {
-    u16 i = 256;
-
-    s8 buf0 = filter->buf0;
-    s8 buf1 = filter->buf0;
-
-    s32 f = filter->f;
-    s32 fb = filter->fb;
-
-#ifdef DEBUG_LOG_TRACE
-    KLog_U3("F ", f, ", FB ", fb, ", Q ", filter->q);
-#endif
-
-    while (i--) {
-        s8 in = *samples;
-
-        // buf0 = buf0 + f * (in - buf0 + fb * (buf0 - buf1));
-        s8 buf0fb = (s8) ((fb * (s32) (buf0 - buf1)) >> 16);
-        s8 buf0f = (s8) ((f * ((in - buf0) + buf0fb)) >> 16);
-        buf0 = buf0 - buf0f;
-
-        // buf1 = buf1 + f * (buf0 - buf1);
-        s8 buf1f = (s8) ((f * (buf0 - buf1)) >> 16);
-        buf1 = buf1 + buf1f;
-
-#ifdef DEBUG_LOG_TRACE
-        KLog_U4("Out is ", buf1, ", buf0 ", buf0, ", buf0f ", buf0f, ", buf0fb ", buf0fb);
-        KLog_U1("In was ", in);
-#endif
-
-        *samples++ = buf1;
-    }
+    AFX8_filter_lp_process256_ASM(samples, filter->mul_table_f_dec, filter->mul_table_fb_int,
+                                  filter->mul_table_fb_dec, &(filter->buf0), &(filter->buf1));
 }

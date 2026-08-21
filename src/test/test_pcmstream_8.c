@@ -18,6 +18,7 @@ static AFX8FilterLP *filter_lp = NULL;
 
 static u16 scanlines[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static u8 scanlines_pos = 0;
+static u16 frameCtr = 0;
 
 static void streamProcessingCallback(s8 *stream, u16 len, void *data)
 {
@@ -40,7 +41,8 @@ static void playStream()
     }
 
     if (filter_lp == NULL) {
-        filter_lp = AFX8_filter_lp_create(800, 45875);
+        // filter_lp = AFX8_filter_lp_create(2000, 45875);
+        filter_lp = AFX8_filter_lp_create(2000, 10000);
     }
 
     // if (inst_saw == NULL) {
@@ -134,6 +136,7 @@ void testPCMStream8()
         scanlines_avg = scanlines_avg >> 4;
 
         logNamedU16("SCANLINES USED (AVG)", scanlines_avg, 1, 20, 3);
+        logNamedU16("FRAMES", ++frameCtr, 1, 21, 4);
 
         scanlines_pos = (scanlines_pos + 1) & 0x0F;
     }
