@@ -2,6 +2,7 @@
 #include "resources.h"
 #include "../inst/saw.h"
 #include "../audiofx/echo8.h"
+#include "../audiofx/filter_lp8.h"
 #include "../pcm_stream/pcm_stream8.h"
 
 #include "log.h"
@@ -12,14 +13,17 @@
 
 static PCMStream8 *pcm_stream = NULL;
 static AFX8Echo *afx_echo = NULL;
+static AFX8FilterLP *filter_lp = NULL;
 // static InstrSaw *inst_saw = NULL;
 
 static u16 scanlines[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static u8 scanlines_pos = 0;
+static u16 frameCtr = 0;
 
 static void streamProcessingCallback(s8 *stream, u16 len, void *data)
 {
     AFX8_echo_process256((s8 *) stream, afx_echo);
+    AFX8_filter_lp_process((s8 *) stream, filter_lp);
 }
 
 static void playStream()
@@ -36,6 +40,11 @@ static void playStream()
         afx_echo = AFX8_echo_create(ECHO_DELAY_SAMPLES);
     }
 
+    if (filter_lp == NULL) {
+        // filter_lp = AFX8_filter_lp_create(2000, 45875);
+        filter_lp = AFX8_filter_lp_create(400, 10000);
+    }
+
     // if (inst_saw == NULL) {
     //     inst_saw = INST_saw_create(1);
     //     PCM_STREAM_setInstrumentCallback(INST_saw_play, inst_saw, pcm_stream);
@@ -44,10 +53,10 @@ static void playStream()
     PCM_STREAM_start(pcm_stream);
 }
 
-static void updateStream()
+static void updateStream(bool renderNext)
 {
     scanlineTimerStart();
-    PCM_STREAM_update(pcm_stream);
+    PCM_STREAM_update(pcm_stream, renderNext);
     scanlines[scanlines_pos] += scanlineTimerStop();
 }
 
@@ -64,7 +73,7 @@ static void resetStream()
 
 static void playSound()
 {
-    PCM_STREAM_playSound((u8 *) wav_snare_rim, sizeof(wav_snare_rim), pcm_stream);
+    PCM_STREAM_playSound((u8 *) wav_saw_sweep, sizeof(wav_saw_sweep), pcm_stream);
     // PCM_STREAM_setInstrumentCallback(NULL, NULL, pcm_stream);
 }
 
@@ -89,7 +98,7 @@ void testPCMStream8()
 
     SYS_showFrameLoad(false);
 
-    XGM2_play(vgm_test);
+    // XGM2_play(vgm_test);
 
     playStream();
 
@@ -99,25 +108,25 @@ void testPCMStream8()
         scanlines[scanlines_pos] = 0;
 
         if (pcm_stream != NULL) {
-            updateStream();
+            updateStream(true);
 
             vu16 i = 300;
             while (i--) {
             }
 
-            updateStream();
+            updateStream(true);
 
             i = 300;
             while (i--) {
             }
 
-            updateStream();
+            updateStream(true);
 
             i = 300;
             while (i--) {
             }
 
-            updateStream();
+            updateStream(false);
         }
 
         u16 scanlines_avg = 0;
@@ -127,6 +136,7 @@ void testPCMStream8()
         scanlines_avg = scanlines_avg >> 4;
 
         logNamedU16("SCANLINES USED (AVG)", scanlines_avg, 1, 20, 3);
+        logNamedU16("FRAMES", ++frameCtr, 1, 21, 4);
 
         scanlines_pos = (scanlines_pos + 1) & 0x0F;
     }

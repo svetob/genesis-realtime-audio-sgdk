@@ -6,12 +6,6 @@ OUT := out
 
 build: all
 
-run:
-	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem out/rom.bin > /dev/null &
-
-run-debug:
-	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem -d out/rom.bin
-
 # To debug generated ASM, run `make clean build asm-motorola`
 asm-motorola: asm
 	@python3 tools/lst2motorola.py $(OUT)
@@ -22,8 +16,17 @@ build-sgdk:
 debug-mame: build
 	$(MAME_PATH)\mame.exe genesis -cart $(OUT)\rom.bin -debug
 
-run-blastem: all asm-motorola run
+run-blastem: all asm-motorola
+	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem out/rom.bin > /dev/null &
+
 debug-blastem: debug asm-motorola run-debug
+	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem -d out/rom.bin
+
+run-mame: all asm-motorola
+	$(GENESIS_DEV)/emulators/mame0289-arm64/mame genesis -cart $(OUT)/rom.bin
+
+debug-mame: all asm-motorola
+	$(GENESIS_DEV)/emulators/mame0289-arm64/mame genesis -cart $(OUT)/rom.bin -debug
 
 # Format and lint using clang-format
 SRC_FILES := $(wildcard src/*.c src/*.h src/*/*.c src/*/*.h src/*/*/*.c src/*/*/*.h)

@@ -5,5 +5,7 @@ extern const u8 upscale_table[512];
 extern const u8 downscale_table[65536];
 extern const u8 mixandclip_u8_table[512];
 extern const u8 mixandclip_s8_table[512];
+extern const u8 mult_s8_dec[65536];
+extern const u8 mult_s8_int[65536];
 
 #endif // _RES_PCM_STREAM_H_

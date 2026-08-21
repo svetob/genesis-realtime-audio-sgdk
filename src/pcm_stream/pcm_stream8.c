@@ -128,7 +128,7 @@ void PCM_STREAM_stop(PCMStream8 *stream)
     stream->status = PCM_STREAM_STATUS_STOPPED;
 }
 
-void PCM_STREAM_update(PCMStream8 *stream)
+void PCM_STREAM_update(PCMStream8 *stream, bool renderNext)
 {
     if (stream->status == PCM_STREAM_STATUS_STOPPED) {
         return;
@@ -136,32 +136,34 @@ void PCM_STREAM_update(PCMStream8 *stream)
 
     XGM2_PCM_mix_into_ringbuf(stream->buffer, &(stream->bufferPos), &(stream->ringbufPosPrev));
 
-    PCMStream8Status statusPrev = stream->status;
-    bool isBuffer0 = stream->bufferPos < 256;
+    if (renderNext) {
+        PCMStream8Status statusPrev = stream->status;
+        bool isBuffer0 = stream->bufferPos < 256;
 
 #ifdef DEBUG_LOG
-    KLog_U4("buf ", stream->buffer, ", status ", stream->status, ", statusPrev", statusPrev,
-            ", isBuffer0 ", isBuffer0);
-    KLog_U2("bufferPos ", stream->bufferPos, ", ringbufPosPrev ", stream->ringbufPosPrev);
+        KLog_U4("buf ", stream->buffer, ", status ", stream->status, ", statusPrev", statusPrev,
+                ", isBuffer0 ", isBuffer0);
+        KLog_U2("bufferPos ", stream->bufferPos, ", ringbufPosPrev ", stream->ringbufPosPrev);
 #endif
 
-    if (isBuffer0) {
-        stream->status = PCM_STREAM_STATUS_PLAYING_BUFFER0;
-        if (statusPrev == PCM_STREAM_STATUS_PLAYING_BUFFER1 ||
-            statusPrev == PCM_STREAM_STATUS_PLAYING_INIT) {
+        if (isBuffer0) {
+            stream->status = PCM_STREAM_STATUS_PLAYING_BUFFER0;
+            if (statusPrev == PCM_STREAM_STATUS_PLAYING_BUFFER1 ||
+                statusPrev == PCM_STREAM_STATUS_PLAYING_INIT) {
 #ifdef DEBUG_LOG
-            KLog("Render Buf1");
+                KLog("Render Buf1");
 #endif
-            renderStreamBuffer(getBuffer1(stream), stream);
-        }
+                renderStreamBuffer(getBuffer1(stream), stream);
+            }
 
-    } else {
-        stream->status = PCM_STREAM_STATUS_PLAYING_BUFFER1;
-        if (statusPrev == PCM_STREAM_STATUS_PLAYING_BUFFER0) {
+        } else {
+            stream->status = PCM_STREAM_STATUS_PLAYING_BUFFER1;
+            if (statusPrev == PCM_STREAM_STATUS_PLAYING_BUFFER0) {
 #ifdef DEBUG_LOG
-            KLog("Render Buf0");
+                KLog("Render Buf0");
 #endif
-            renderStreamBuffer(getBuffer0(stream), stream);
+                renderStreamBuffer(getBuffer0(stream), stream);
+            }
         }
     }
 }
