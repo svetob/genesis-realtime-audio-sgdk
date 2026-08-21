@@ -83,7 +83,7 @@ PCMStream8 *PCM_STREAM_create(SoundPCMChannel channel);
 void PCM_STREAM_reset(PCMStream8 *stream);
 void PCM_STREAM_free(PCMStream8 *stream);
 
-void PCM_STREAM_update(PCMStream8 *stream);
+void PCM_STREAM_update(PCMStream8 *stream, bool renderNext);
 
 void PCM_STREAM_start(PCMStream8 *stream);
 void PCM_STREAM_isPlaying(PCMStream8 *stream);

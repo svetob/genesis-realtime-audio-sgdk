@@ -53,10 +53,10 @@ static void playStream()
     PCM_STREAM_start(pcm_stream);
 }
 
-static void updateStream()
+static void updateStream(bool renderNext)
 {
     scanlineTimerStart();
-    PCM_STREAM_update(pcm_stream);
+    PCM_STREAM_update(pcm_stream, renderNext);
     scanlines[scanlines_pos] += scanlineTimerStop();
 }
 
@@ -73,7 +73,7 @@ static void resetStream()
 
 static void playSound()
 {
-    PCM_STREAM_playSound((u8 *) wav_snare_rim, sizeof(wav_snare_rim), pcm_stream);
+    PCM_STREAM_playSound((u8 *) wav_saw_sweep, sizeof(wav_saw_sweep), pcm_stream);
     // PCM_STREAM_setInstrumentCallback(NULL, NULL, pcm_stream);
 }
 
@@ -108,25 +108,25 @@ void testPCMStream8()
         scanlines[scanlines_pos] = 0;
 
         if (pcm_stream != NULL) {
-            updateStream();
+            updateStream(true);
 
             vu16 i = 300;
             while (i--) {
             }
 
-            updateStream();
+            updateStream(true);
 
             i = 300;
             while (i--) {
             }
 
-            updateStream();
+            updateStream(true);
 
             i = 300;
             while (i--) {
             }
 
-            updateStream();
+            updateStream(false);
         }
 
         u16 scanlines_avg = 0;
