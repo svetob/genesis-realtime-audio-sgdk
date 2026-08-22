@@ -2,9 +2,9 @@
 #include "pcm_stream8_mac.i"
 
 
-* extern void PCM_STREAM8_mixAndClip256_ASM(s8 *in, s8 *out);
+* extern void PCM_STREAM8_mixAndClip64_ASM(s8 *in, s8 *out, u16 len);
 
-func    PCM_STREAM8_mixAndClip256_ASM
+func    PCM_STREAM8_mixAndClip64_ASM
         movem.l a2/d2-d4,-(sp)
 
 pcms8_renderpcm_init:
@@ -22,7 +22,7 @@ pcms8_renderpcm_init:
         * mixedSample -> d2
         move.w  #0,d2
         * i -> d3
-        move.b  #16,d3
+        move.l  28(sp),d3
         * 0x80 -> d4
         move.b  #0x80,d4
 
@@ -30,7 +30,7 @@ pcms8_renderpcm_loop:
 .L1:
         pcms8_renderpcm_do16
 
-        subq.b  #1,d3
+        subi.b  #16,d3
         bne     .L1
 
 pcms8_renderpcm_return:

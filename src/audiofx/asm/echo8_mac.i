@@ -1,5 +1,5 @@
 
-.macro  afx8_echo_doProcess
+.macro  afx8_echo_doProcess4
 * Read samples into d3
         move.l  (a0),d3
 
@@ -31,4 +31,26 @@
 * --Write result to out and line
         move.l  d3,(a0)+
         move.l  d3,(a2)+
+.endm
+
+.macro afx8_echo_doProcess64
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
 .endm

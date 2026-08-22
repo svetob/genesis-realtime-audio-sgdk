@@ -35,6 +35,6 @@ typedef struct {
 
 AFX8FilterLP *AFX8_filter_lp_create(u32 cutoffFreq, s32 q);
 void AFX8_filter_lp_free(AFX8FilterLP *filter);
-void AFX8_filter_lp_process(s8 *samples, AFX8FilterLP *filter);
+void AFX8_filter_lp_process(s8 *samples, u16 len, AFX8FilterLP *filter);
 
 #endif

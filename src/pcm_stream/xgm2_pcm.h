@@ -40,9 +40,9 @@ void XGM2_PCM_activate();
  * \param pos
  *      Current position in buffer, will be updated.
  *
- * \param ringbufPosPrev
+ * \param ringbufPos
  *      Previous ring buffer position, will be updated.
  */
-void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *pos, u8 *ringbufPosPrev);
+void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *pos, u8 *ringbufPos);
 
 #endif
