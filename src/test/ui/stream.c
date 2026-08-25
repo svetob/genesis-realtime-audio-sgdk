@@ -18,26 +18,29 @@ u16 param_filter_freq = 2000;
 u16 param_filter_q = 40000;
 
 bool param_echo_enabled = true;
-bool param_echo_delay = 4096;
+u16 param_echo_delay = 4096;
+u8 param_echo_feedback = 220;
 
 // ===========================
 // PRIVATE
 // ===========================
 
 #define PCM_PLAYBACK_RATE 13300
+#define ECHO_BUFFER_SIZE  4096
 
 static PCMStream8 *pcm_stream = NULL;
 static AFX8Echo *afx_echo = NULL;
-static AFX8FilterLP *filter_lp = NULL;
+static AFX8FilterLP *afx_filter_lp = NULL;
+
 static bool vgm_is_playing = false;
 
 static void streamProcessingCallback(s8 *stream, u16 len, void *data)
 {
     if (param_filter_enabled) {
-        AFX8_filter_lp_process((s8 *) stream, len, filter_lp);
+        AFX8_filter_lp_process((s8 *) stream, len, afx_filter_lp);
     }
     if (param_echo_enabled) {
-        // AFX8_echo_process((s8 *) stream, len, afx_echo);
+        AFX8_echo_process((s8 *) stream, len, afx_echo);
     }
 }
 
@@ -56,11 +59,11 @@ void startStream()
     }
 
     if (afx_echo == NULL) {
-        afx_echo = AFX8_echo_create(param_echo_delay);
+        afx_echo = AFX8_echo_create(ECHO_BUFFER_SIZE, param_echo_delay);
     }
 
-    if (filter_lp == NULL) {
-        filter_lp = AFX8_filter_lp_create(2000, 45875);
+    if (afx_filter_lp == NULL) {
+        afx_filter_lp = AFX8_filter_lp_create(2000, 45875);
     }
 
     PCM_STREAM_start(pcm_stream);
@@ -69,7 +72,8 @@ void startStream()
 void updateParams()
 {
     scanlineTimerStart();
-    AFX8_filter_lp_update(filter_lp, param_filter_freq, param_filter_q);
+    AFX8_filter_lp_update(afx_filter_lp, param_filter_freq, param_filter_q);
+    AFX8_echo_update(afx_echo, param_echo_delay);
     scanlineTimerStop();
 }
 
@@ -86,10 +90,10 @@ void resetStream()
     PCM_STREAM_reset(pcm_stream);
 
     AFX8_echo_free(afx_echo);
-    AFX8_echo_create(param_echo_delay);
+    AFX8_echo_create(ECHO_BUFFER_SIZE, param_echo_delay);
 
-    AFX8_filter_lp_free(filter_lp);
-    filter_lp = AFX8_filter_lp_create(2000, 45875);
+    AFX8_filter_lp_free(afx_filter_lp);
+    afx_filter_lp = AFX8_filter_lp_create(2000, 45875);
 
     PCM_STREAM_start(pcm_stream);
 }

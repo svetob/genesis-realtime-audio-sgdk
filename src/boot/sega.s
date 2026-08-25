@@ -1,4 +1,5 @@
 #include "task_cst.h"
+#include "config.h"
 
 .section .text.keepboot
 
@@ -91,6 +92,8 @@ SkipInit:
 *       interrupt functions
 *
 *------------------------------------------------
+
+#if !defined(LEGACY_ERROR_HANDLER)
 
 registersDump:
         move.l %d0,registerState+0
@@ -211,6 +214,8 @@ _Error_Exception:
         jsr    (%a0)
         movem.l (%sp)+,%d0-%d1/%a0-%a1
         rte
+
+#endif /* !defined(LEGACY_ERROR_HANDLER) */
 
 _INT:
         movem.l %d0-%d1/%a0-%a1,-(%sp)

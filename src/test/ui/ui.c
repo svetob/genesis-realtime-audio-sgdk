@@ -9,8 +9,9 @@
 #include <test/log.h>
 #include <test/timer.h>
 
-#define PCM_PLAYBACK_RATE  13300
-#define ECHO_DELAY_SAMPLES 4096
+#define PCM_PLAYBACK_RATE 13300
+
+#define ECHO_BUFFER_SIZE  4096
 
 static u8 currentTab = 0;
 static u8 currentRow = 0;
@@ -18,7 +19,7 @@ static u8 currentRow = 0;
 static s8 tabRollerOffset = 0;
 
 static const char *tabNames[] = {"STREAM", "FILTER", " ECHO ", "REVERB", "DRIVE ", "OUTPUT"};
-static u8 tabParamCnt[] = {0, 2, 0, 0, 0, 0};
+static u8 tabParamCnt[] = {0, 3, 2, 0, 0, 0};
 
 static char uicharbuf[10];
 void writeParamU16(u16 val, char *unit, u16 x, u16 y, u8 minLen)
@@ -42,43 +43,58 @@ void writeParamU16(u16 val, char *unit, u16 x, u16 y, u8 minLen)
     VDP_drawText(unit, x + len + 1, y);
 }
 
-static void decrementParam()
+static void changeParam(bool pressed, bool inc)
 {
     if (currentTab == TAB_FILTER) {
-        if (currentRow == 2) {
+        if (currentRow == 1 && pressed) {
+            // Enabled
+            param_filter_enabled = !param_filter_enabled;
+        }
+
+        if (currentRow == 2 && !pressed) {
             // Freq
-            if (param_filter_freq > 1000) {
-                param_filter_freq -= 50;
-            } else if (param_filter_freq > 40) {
-                param_filter_freq -= 10;
+            if (inc) {
+                if (param_filter_freq < 1000) {
+                    param_filter_freq += 10;
+                } else if (param_filter_freq < (PCM_PLAYBACK_RATE >> 1)) {
+                    param_filter_freq += 50;
+                }
+            } else {
+                if (param_filter_freq > 1000) {
+                    param_filter_freq -= 50;
+                } else if (param_filter_freq > 40) {
+                    param_filter_freq -= 10;
+                }
             }
         }
 
-        if (currentRow == 3) {
+        if (currentRow == 3 && !pressed) {
             // Q
-            if (param_filter_q > 1000) {
+            if (inc && param_filter_q < 65000) {
+                param_filter_q += 400;
+            }
+            if (!inc && param_filter_q > 1000) {
                 param_filter_q -= 400;
             }
         }
     }
-}
 
-static void incrementParam()
-{
-    if (currentTab == TAB_FILTER) {
-        if (currentRow == 2) {
-            // Freq
-            if (param_filter_freq < 1000) {
-                param_filter_freq += 10;
-            } else if (param_filter_freq < (PCM_PLAYBACK_RATE >> 1)) {
-                param_filter_freq += 50;
-            }
+    if (currentTab == TAB_ECHO) {
+        if (currentRow == 1 && pressed) {
+            // Enabled
+            param_echo_enabled = !param_echo_enabled;
         }
 
-        if (currentRow == 3) {
-            // Q
-            if (param_filter_q < 65000) {
-                param_filter_q += 400;
+        if (currentRow == 2 && !pressed) {
+            // Freq
+            if (inc) {
+                if (param_echo_delay < ECHO_BUFFER_SIZE) {
+                    param_echo_delay += 64;
+                }
+            } else {
+                if (param_echo_delay > 256) {
+                    param_echo_delay -= 64;
+                }
             }
         }
     }
@@ -87,11 +103,11 @@ static void incrementParam()
 static void handleInputHeld(u16 joy)
 {
     if (joy & BUTTON_LEFT) {
-        decrementParam();
+        changeParam(false, false);
     }
 
     if (joy & BUTTON_RIGHT) {
-        incrementParam();
+        changeParam(false, true);
     }
 }
 
@@ -104,7 +120,8 @@ static void handleInput(u16 joy, u16 changed, u16 state)
     }
 
     if (changed & state & BUTTON_DOWN) {
-        if (currentRow < 3 /* tabParamCnt[currentRow] */) {
+        KLog_U2("Tabrows ", tabParamCnt[currentTab], " currentTab ", currentTab);
+        if (currentRow < tabParamCnt[currentTab]) {
             currentRow += 1;
         }
     }
@@ -116,6 +133,8 @@ static void handleInput(u16 joy, u16 changed, u16 state)
                 tabRollerOffset += 10;
             }
         }
+
+        changeParam(true, false);
     }
 
     if (changed & state & BUTTON_RIGHT) {
@@ -125,6 +144,8 @@ static void handleInput(u16 joy, u16 changed, u16 state)
                 tabRollerOffset -= 10;
             }
         }
+
+        changeParam(true, true);
     }
 
     if (changed & state & BUTTON_A) {
@@ -192,7 +213,18 @@ void drawOptions()
         VDP_drawText("     CUTOFF FREQ", XNAME, YPOS(1));
         VDP_drawText("               Q", XNAME, YPOS(2));
 
+        VDP_drawText(param_filter_enabled ? "ON" : "OFF", XVALUE, YPOS(0));
         writeParamU16(param_filter_freq, "Hz", XVALUE, YPOS(1), 4);
+        writeParamU16(param_filter_q, NULL, XVALUE, YPOS(2), 4);
+    }
+
+    if (currentTab == TAB_ECHO) {
+        VDP_drawText("         ENABLED", XNAME, YPOS(0));
+        VDP_drawText("     CUTOFF FREQ", XNAME, YPOS(1));
+        VDP_drawText("               Q", XNAME, YPOS(2));
+
+        VDP_drawText(param_echo_enabled ? "ON" : "OFF", XVALUE, YPOS(0));
+        writeParamU16(param_echo_delay, "samples", XVALUE, YPOS(1), 4);
         writeParamU16(param_filter_q, NULL, XVALUE, YPOS(2), 4);
     }
 }

@@ -17,7 +17,8 @@ extern u16 param_filter_freq;
 extern u16 param_filter_q;
 
 extern bool param_echo_enabled;
-extern bool param_echo_delay;
+extern u16 param_echo_delay;
+extern u8 param_echo_feedback;
 
 void toggleVGM();
 void playSoundSnare();

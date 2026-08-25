@@ -10,6 +10,7 @@
 typedef struct {
     s8 *delayLine;
     u16 size;
+    u16 delay;
     u16 pos;
 } AFX8Echo;
 
@@ -17,10 +18,24 @@ typedef struct {
  * \brief
  *      Create a new 8-bit Echo Audio Effect.
  *
+ * \param bufferSize
+ *      Buffer size, in samples. Must be multiple of 256.
+ *
  * \param delay
- *      Delay, in samples. Must be multiple of 256.
+ *      Delay, in samples. Must be multiple of 256 and not
+ *      greater than bufferSize.
  */
-AFX8Echo *AFX8_echo_create(u16 delay);
+AFX8Echo *AFX8_echo_create(u16 bufferSize, u16 delay);
+
+/**
+ * \brief
+ *      Change echo parameters.
+ *
+ * \param delay
+ *      Delay, in samples. Must be multiple of 256 and not
+ *      greater than bufferSize.
+ */
+void AFX8_echo_update(AFX8Echo *afx, u16 delay);
 
 /**
  * \brief
