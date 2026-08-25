@@ -56,7 +56,7 @@ static void renderStreamBuffer(u8 *buf, u16 len, PCMStream8 *stream)
 #ifdef DEBUG_LOG
     KLog_U2("Clearing at ", (u32) buf, ", len ", len);
 #endif
-    memset(buf, 0, len);
+    memsetU32(buf, 0, len >> 2);
 
     renderSoundsToStream(buf, len, stream);
     doInstrumentCallback(buf, len, stream);

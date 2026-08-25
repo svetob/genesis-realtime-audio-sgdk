@@ -13,11 +13,11 @@
 // PARAMS
 // ===========================
 
-bool param_filter_enabled = true;
+bool param_filter_enabled = false;
 u16 param_filter_freq = 2000;
 u16 param_filter_q = 40000;
 
-bool param_echo_enabled = true;
+bool param_echo_enabled = false;
 u16 param_echo_delay = 4096;
 u8 param_echo_feedback = 220;
 
