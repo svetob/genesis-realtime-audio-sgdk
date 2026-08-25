@@ -53,10 +53,10 @@ afx8_filter_lp_loop_dbra:
 
 afx8_filter_lp_ret:
         * Write buf0 back to memory
-        movea.l 44(sp),a0
+        movea.l 48(sp),a0
         move.b  d0,(a0)
         * Write buf1 back to memory
-        movea.l 48(sp),a0
+        movea.l 52(sp),a0
         move.b  d1,(a0)
 
         movem.l (sp)+,a2-a3/d2-d5

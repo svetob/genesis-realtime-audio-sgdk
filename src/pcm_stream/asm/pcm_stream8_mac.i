@@ -1,6 +1,6 @@
 * 1 PCM to dirty buffer
 .macro  pcms8_renderpcm_1_to_dirty_do4
-        move.l  (a0)+,(a1+)
+        move.l  (a0)+,(a1)+
 .endm   * 7 cycles per sample
 
 .macro  pcms8_renderpcm_1write_do64

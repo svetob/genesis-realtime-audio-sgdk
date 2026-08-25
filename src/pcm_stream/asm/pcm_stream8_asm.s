@@ -30,7 +30,7 @@ pcms8_renderpcm_loop:
 .L1:
         pcms8_renderpcm_do16
 
-        subi.b  #16,d3
+        subi.w  #16,d3
         bne     .L1
 
 pcms8_renderpcm_return:
