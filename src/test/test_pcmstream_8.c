@@ -1,6 +1,5 @@
 #include <genesis.h>
 #include "resources.h"
-#include "../inst/saw.h"
 #include "../audiofx/echo8.h"
 #include "../audiofx/filter_lp8.h"
 #include "../pcm_stream/pcm_stream8.h"
@@ -15,13 +14,9 @@ static PCMStream8 *pcm_stream = NULL;
 static AFX8Echo *afx_echo = NULL;
 static AFX8FilterLP *filter_lp = NULL;
 
-static u16 scanlines[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static u8 scanlines_pos = 0;
-static u16 frameCtr = 0;
-
 static void streamProcessingCallback(s8 *stream, u16 len, void *data)
 {
-    AFX8_echo_process((s8 *) stream, len, afx_echo);
+    // AFX8_echo_process((s8 *) stream, len, afx_echo);
     AFX8_filter_lp_process((s8 *) stream, len, filter_lp);
 }
 
@@ -41,17 +36,17 @@ static void playStream()
 
     if (filter_lp == NULL) {
         // filter_lp = AFX8_filter_lp_create(2000, 45875);
-        filter_lp = AFX8_filter_lp_create(800, 10000);
+        filter_lp = AFX8_filter_lp_create(2000, 40000);
     }
 
     PCM_STREAM_start(pcm_stream);
 }
 
-static void updateStream(bool renderNext)
+static inline void updateStream(bool renderNext)
 {
     scanlineTimerStart();
     PCM_STREAM_update(pcm_stream, renderNext);
-    scanlines[scanlines_pos] += scanlineTimerStop();
+    scanlineTimerStop();
 }
 
 static void resetStream()
@@ -85,47 +80,35 @@ static void handleInput(u16 joy, u16 changed, u16 state)
 void testPCMStream8()
 {
     VDP_drawText("8-Bit Echo demo!", 10, 13);
-    VDP_drawText("HInt used: ", 1, 30);
 
     JOY_setEventHandler(handleInput);
     Z80_loadDriver(Z80_DRIVER_XGM2, true);
 
     SYS_showFrameLoad(false);
 
-    // XGM2_play(vgm_test);
+    XGM2_play(vgm_test);
 
     playStream();
 
     while (true) {
         SYS_doVBlankProcess();
 
-        scanlines[scanlines_pos] = 0;
-
         if (pcm_stream != NULL) {
             updateStream(true);
 
-            vu16 i = 300;
-            while (i--) {
+            while (GET_VCOUNTER < 70) {
             }
 
             updateStream(false);
 
-            // i = 300;
-            // while (i--) {
-            // }
+            while (GET_VCOUNTER < 140) {
+            }
 
-            // updateStream(false);x
+            updateStream(false);
         }
 
-        u16 scanlines_avg = 0;
-        for (u8 i = 0; i < 16; i++) {
-            scanlines_avg += scanlines[i];
-        }
-        scanlines_avg = scanlines_avg >> 4;
-
-        logNamedU16("FRAMES", ++frameCtr, 1, 26, 4);
+        scanlineTimerNextFrame();
+        logNamedU16("FRAMES", frame_ctr, 1, 26, 4);
         logNamedU16("SCANLINES USED (AVG)", scanlines_avg, 1, 27, 3);
-
-        scanlines_pos = (scanlines_pos + 1) & 0x0F;
     }
 }

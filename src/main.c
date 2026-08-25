@@ -1,9 +1,10 @@
 #include <genesis.h>
+#include "test/ui/ui.h"
 #include "test/test.h"
 
 int main(bool hard)
 {
-    testPCMStream8();
+    runUI();
 
     return 0;
 }

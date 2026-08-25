@@ -1,7 +1,6 @@
-src/test.vgm
-
 # Build output
 out/*
+!out/rom.bin
 
 # MAME
 cfg/

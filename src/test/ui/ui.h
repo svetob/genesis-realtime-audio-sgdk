@@ -1,0 +1,32 @@
+#ifndef __TESTUI_H
+#define __TESTUI_H
+
+typedef enum {
+    TAB_STREAM = 0,
+    TAB_FILTER,
+    TAB_ECHO,
+    TAB_REVERB,
+    TAB_DRIVE,
+    TAB_OUTPUT,
+} UITab;
+
+#define UI_TABS 6
+
+extern bool param_filter_enabled;
+extern u16 param_filter_freq;
+extern u16 param_filter_q;
+
+extern bool param_echo_enabled;
+extern bool param_echo_delay;
+
+void toggleVGM();
+void playSoundSnare();
+void playSoundSweep();
+void resetStream();
+void updateParams();
+void updateStream(bool renderNext);
+void startStream();
+
+void runUI();
+
+#endif

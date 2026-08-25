@@ -4,7 +4,7 @@
 #include "../pcm_stream/const.h"
 #include "../test/log.h"
 
-#define DEBUG_LOG
+// #define DEBUG_LOG
 // #define DEBUG_LOG_TRACE
 
 extern void AFX8_filter_lp_process256_ASM(s8 *samples, u16 len, void *mult_table_f_dec,
@@ -38,6 +38,9 @@ fb = 45875 + (45875 * 65536) / (65536 - 7884) = 45875 + 3006464000 / 57652 = 458
 u32 calculateFeedback(u32 f, s32 q)
 {
     u32 divisor = (65536 - f);
+    if (divisor < 100) {
+        divisor = 100;
+    }
     u32 fb = q + ((q << 16) / divisor);
 
 #ifdef DEBUG_LOG
@@ -53,21 +56,29 @@ u32 calculateFeedback(u32 f, s32 q)
 
 AFX8FilterLP *AFX8_filter_lp_create(u32 cutoffFreq, s32 q)
 {
+    AFX8FilterLP *filter = (AFX8FilterLP *) MEM_alloc(sizeof(AFX8FilterLP));
+    filter->buf0 = 0;
+    filter->buf1 = 0;
+
+    AFX8_filter_lp_update(filter, cutoffFreq, q);
+
+    return filter;
+}
+
+AFX8FilterLP *AFX8_filter_lp_update(AFX8FilterLP *filter, u32 cutoffFreq, s32 q)
+{
     if (cutoffFreq < 20) {
         cutoffFreq = 20;
     }
-    if (cutoffFreq > (PCM_PLAYBACK_RATE / 2)) {
-        cutoffFreq = (PCM_PLAYBACK_RATE / 2);
+    if (cutoffFreq > ((PCM_PLAYBACK_RATE / 2) - 100)) {
+        cutoffFreq = (PCM_PLAYBACK_RATE / 2) - 100;
     }
 
     u32 f = (cutoffFreq << 16) / (PCM_PLAYBACK_RATE / 2);
 
-    AFX8FilterLP *filter = (AFX8FilterLP *) MEM_alloc(sizeof(AFX8FilterLP));
     filter->f = f;
     filter->q = q;
     filter->fb = calculateFeedback(f, q);
-    filter->buf0 = 0;
-    filter->buf1 = 0;
 
     filter->mul_table_f_dec = mult_s8_dec + (filter->f & 0x0000FF00);
 
