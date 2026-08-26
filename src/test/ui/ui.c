@@ -9,16 +9,12 @@
 #include <test/log.h>
 #include <test/timer.h>
 
-#define PCM_PLAYBACK_RATE 13300
-#define ECHO_BUFFER_SIZE  4096
-
-static const char *tabNames[] = {"STREAM", "FILTER", " ECHO ", "REVERB", "DRIVE ", "OUTPUT"};
-static const char *filterTypeNames[] = {"1-POLE 6db", "2-POLE 12db", "2-P RESONANT 12db"};
-static u8 tabParamCnt[] = {0, 3, 2, 0, 0, 0};
-
 // ===========================
-// PRIVATE
+// CONST
 // ===========================
+
+#define PCM_PLAYBACK_RATE        13300
+#define ECHO_BUFFER_SIZE         4096
 
 #define PARAM_ROW_FILTER_ENABLED 1
 #define PARAM_ROW_FILTER_TYPE    2
@@ -29,20 +25,34 @@ static u8 tabParamCnt[] = {0, 3, 2, 0, 0, 0};
 #define PARAM_ROW_ECHO_DELAY     2
 #define PARAM_ROW_ECHO_FEEDBACK  3
 
+#define PARAM_ROW_YTOP           13
+#define PARAM_ROW_YOFFSET        2
+#define PARAM_ROW_XNAME          2
+#define PARAM_ROW_XVALUE         22
+#define PARAM_ROW_YPOS(x)        (PARAM_ROW_YTOP + (PARAM_ROW_YOFFSET * (x - 1)))
+
+static const char *tabNames[] = {"STREAM", "FILTER", " ECHO ", "REVERB", "DRIVE ", "OUTPUT"};
+static const char *filterTypeNames[] = {"1-POLE 6db", "2-POLE 12db", "2-P RESONANT 12db"};
+static u8 tabParamCnt[] = {0, 4, 3, 0, 0, 0};
+
+// ===========================
+// PRIVATE
+// ===========================
+
 static u8 currentTab = 0;
 static u8 currentRow = 0;
 static s8 tabRollerOffset = 0;
 
-static char uicharbuf[10];
+static bool redrawParams = false;
+static u8 redrawParamRow = 0;
 
-static bool redrawParams;
-
-static void writeParamU16(u16 val, char *unit, u16 x, u16 y, u8 minLen)
+static char paramStrBuf[10];
+static u8 paramToStrU16(u16 val, char *unit, u8 minLen)
 {
-    intToStr(val, uicharbuf, minLen);
+    intToStr(val, paramStrBuf, minLen);
 
     u8 len = 0;
-    char *charAt = uicharbuf;
+    char *charAt = paramStrBuf;
     bool sawFirstDigit = false;
     while (*charAt != NULL) {
         if (*charAt == '0' && sawFirstDigit == false) {
@@ -53,9 +63,28 @@ static void writeParamU16(u16 val, char *unit, u16 x, u16 y, u8 minLen)
         len++;
         charAt++;
     }
+    return len;
+}
 
-    VDP_drawText(uicharbuf, x, y);
-    VDP_drawText(unit, x + len + 1, y);
+inline static void writeParamValueU16(u8 row, u16 val, char *unit, u8 minLen)
+{
+    u8 len = paramToStrU16(val, unit, minLen);
+    VDP_drawText(paramStrBuf, PARAM_ROW_XVALUE, PARAM_ROW_YPOS(row));
+    VDP_drawText(unit, PARAM_ROW_XVALUE + len + 1, PARAM_ROW_YPOS(row));
+}
+
+inline static void writeParamValueText(char *val, u8 row)
+{
+    if (redrawParams || redrawParamRow == row) {
+        VDP_drawText(val, PARAM_ROW_XVALUE, PARAM_ROW_YPOS(row));
+    }
+}
+
+inline static void writeParamName(char *val, u8 row)
+{
+    if (redrawParams) {
+        VDP_drawText(val, PARAM_ROW_XNAME, PARAM_ROW_YPOS(row));
+    }
 }
 
 static void changeParam(bool pressed, bool inc)
@@ -233,44 +262,41 @@ static void drawTabs()
     }
 }
 
-#define YTOP    13
-#define YOFFSET 2
-#define XNAME   2
-#define XVALUE  22
-#define YPOS(x) (YTOP + (YOFFSET * (x - 1)))
-
 static void drawOptions()
 {
-    if (!redrawParams) {
+    if (!redrawParams && !redrawParamRow) {
         return;
     }
 
-    VDP_clearTextArea(0, YTOP, 40, 20);
+    if (redrawParams) {
+        VDP_clearTextArea(0, PARAM_ROW_YTOP, 40, 20);
+    }
 
     if (currentRow > 0) {
-        VDP_drawText(">", XVALUE - 2, YTOP + (YOFFSET * (currentRow - 1)));
+        VDP_drawText(">", PARAM_ROW_XVALUE - 2,
+                     PARAM_ROW_YTOP + (PARAM_ROW_YOFFSET * (currentRow - 1)));
     }
 
     if (currentTab == TAB_FILTER) {
-        VDP_drawText("         ENABLED", XNAME, YPOS(PARAM_ROW_FILTER_ENABLED));
-        VDP_drawText("     FILTER TYPE", XNAME, YPOS(PARAM_ROW_FILTER_TYPE));
-        VDP_drawText("     CUTOFF FREQ", XNAME, YPOS(PARAM_ROW_FILTER_FREQ));
-        VDP_drawText("   RESONANCE (Q)", XNAME, YPOS(PARAM_ROW_FILTER_Q));
+        writeParamName("         ENABLED", PARAM_ROW_FILTER_ENABLED);
+        writeParamName("     FILTER TYPE", PARAM_ROW_FILTER_TYPE);
+        writeParamName("     CUTOFF FREQ", PARAM_ROW_FILTER_FREQ);
+        writeParamName("   RESONANCE (Q)", PARAM_ROW_FILTER_Q);
 
-        VDP_drawText(param_filter_enabled ? "ON" : "OFF", XVALUE, YPOS(PARAM_ROW_FILTER_ENABLED));
-        VDP_drawText(filterTypeNames[param_filter_type], XVALUE, YPOS(PARAM_ROW_FILTER_TYPE));
-        writeParamU16(param_filter_freq, "Hz", XVALUE, YPOS(PARAM_ROW_FILTER_FREQ), 4);
-        writeParamU16(param_filter_q, NULL, XVALUE, YPOS(PARAM_ROW_FILTER_Q), 5);
+        writeParamValueText(param_filter_enabled ? "ON" : "OFF", PARAM_ROW_FILTER_ENABLED);
+        writeParamValueText((char *) filterTypeNames[param_filter_type], PARAM_ROW_FILTER_TYPE);
+        writeParamValueU16(PARAM_ROW_FILTER_FREQ, param_filter_freq, "Hz", 4);
+        writeParamValueU16(PARAM_ROW_FILTER_Q, param_filter_q, NULL, 5);
     }
 
-    if (currentTab == TAB_ECHO) {
-        VDP_drawText("         ENABLED", XNAME, YPOS(PARAM_ROW_ECHO_ENABLED));
-        VDP_drawText("           DELAY", XNAME, YPOS(PARAM_ROW_ECHO_DELAY));
-        VDP_drawText("        FEEDBACK", XNAME, YPOS(PARAM_ROW_ECHO_FEEDBACK));
+    else if (currentTab == TAB_ECHO) {
+        writeParamName("         ENABLED", PARAM_ROW_ECHO_ENABLED);
+        writeParamName("           DELAY", PARAM_ROW_ECHO_DELAY);
+        writeParamName("        FEEDBACK", PARAM_ROW_ECHO_FEEDBACK);
 
-        VDP_drawText(param_echo_enabled ? "ON" : "OFF", XVALUE, YPOS(PARAM_ROW_ECHO_ENABLED));
-        writeParamU16(param_echo_delay, "samples", XVALUE, YPOS(PARAM_ROW_ECHO_DELAY), 4);
-        writeParamU16(param_filter_q, NULL, XVALUE, YPOS(PARAM_ROW_ECHO_FEEDBACK), 4);
+        writeParamValueText(param_echo_enabled ? "ON" : "OFF", PARAM_ROW_ECHO_ENABLED);
+        writeParamValueU16(PARAM_ROW_ECHO_DELAY, param_echo_delay, "samples", 4);
+        writeParamValueU16(PARAM_ROW_ECHO_FEEDBACK, param_filter_q, NULL, 5);
     }
 
     redrawParams = false;
