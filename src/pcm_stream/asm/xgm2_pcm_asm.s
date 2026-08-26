@@ -17,7 +17,7 @@ func    XGM2_PCM_SYS_enableInts_fast_noStack
 * ORIGINAL:
 *
 * func SYS_getAndSetInterruptMaskLevel
-*    move.w  6(%sp),d1                      // d1 = value
+*    move.w  6(%sp),d1                       // d1 = value
 *    andi.w  #0x07,%d1
 *    ori.w   #0x20,%d1
 *    lsl.w   #8,%d1
@@ -31,9 +31,9 @@ func    XGM2_PCM_SYS_enableInts_fast_noStack
 
 
 
-* extern void XGM2_PCM_mixIntoRingBuffer(s8* pcm, vu8* ringbuf)
+* extern void XGM2_PCM_mixIntoRingBuffer_ASM(s8* pcm, vu8* ringbuf)
 
-func    XGM2_PCM_mixIntoRingBuffer
+func    XGM2_PCM_mixIntoRingBuffer_ASM
 
 xgm2pcm_mixbuffer_init:
         * pcmBuf  -> a0
@@ -48,29 +48,53 @@ xgm2pcm_mixbuffer_ret:
         rts
 
 
-* extern void XGM2_PCM_mixIntoRingBuffer_withOverflowProtection(s8* pcm, vu8* ringbuf)
+* extern void XGM2_PCM_mixIntoRingBuffer_withOverflowProtection_ASM(
+*     s8* pcmBuf,
+*     vu8* ringBuf,
+*     u16 pcmPos,
+*     u8 ringPosWrite,
+*     u8 ringPosStop
+* )
 
-func    XGM2_PCM_mixIntoRingBuffer_withOverflowProtection
-        movem.l a2/d2,-(sp)
+func    XGM2_PCM_mixIntoRingBuffer_withOverflowProtection_ASM
+        movem.l a2/d2-d6,-(sp)
 
 xgm2pcm_mixbuffer_clip_init:
-        * pcmBuf  -> a0
-        movea.l 12(sp),a0
-        * ringBuf -> a1
-        movea.l 16(sp),a1
-        * LUT     -> a2
-        lea     mixandclip_u8_table,a2
+        *                                       // pcmBuf        -> a0
+        *                                       // ringBuf       -> a1
+        lea     mixandclip_u8_table,a2          // LUT           -> a2
 
-        * pcmSample     -> d0
-        moveq.l #0,d0
-        * ringBufSample -> d1
-        moveq.l #0,d1
-        * S8toU8const   -> d2
-        move.w  #0x0080,d2
+
+        moveq.l #0,d0                           // pcmSample     -> d0
+        moveq.l #0,d1                           // ringBufSample -> d1
+        move.w  #0x0080,d2                      // S8toU8const   -> d2
+        move.l  36(sp),d3                       // pcmPos        -> d3
+        move.l  40(sp),d4                       // ringPosWrite  -> d
+        move.w  46(sp),d5                       // ringPosStop   -> d5
+        moveq   #2,d6                           // maxIters      -> d6 (3 max iterations)
 
 xgm2pcm_mixbuffer_clip_do64:
+.L1:
+        movea.l 28(sp),a0
+        adda.l  d4,a0
+        movea.l 32(sp),a1                       // TODO Make const instead of arg
+        adda.l  d5,a1
+
         xgm2pcm_writebuf_clip_do64
 
+xgm2pcm_mixbuffer_clip_loop:
+        dbra    d6,.L2                          // Exit loop after max iterations
+
+        addi.w  #0x40,d3                        // Increment and wrap pcmPos
+        andi.w  #0x01FF,d3
+
+        addi.b  #0x40,d4                        // Increment and wrap ringPosWrite
+
+        cmp     d4,d5                           // Exit loop when ringPosStop reached
+        bne     .L1
+
+
 xgm2pcm_mixbuffer_clip_ret:
-        movem.l (sp)+,a2/d2
+.L2:
+        movem.l (sp)+,a2/d2-d6
         rts
