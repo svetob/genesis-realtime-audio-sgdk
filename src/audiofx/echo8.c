@@ -35,7 +35,7 @@ void AFX8_echo_update(AFX8Echo *afx, u16 delay)
         }
         afx->delay = delay;
 
-        while (afx->pos >= delay) {
+        while (afx->pos > delay) {
             afx->pos -= delay;
         }
     }

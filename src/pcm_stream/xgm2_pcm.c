@@ -31,7 +31,7 @@ static inline void XGM2_PCM_Z80_getAndRequestBus_fast()
 
 static inline void XGM2_PCM_Z80_releaseBus_fast()
 {
-    *((u16 *) Z80_HALT_PORT) = 0x0000;
+    *((vu16 *) Z80_HALT_PORT) = 0x0000;
 }
 
 static inline void enterBus()
@@ -104,7 +104,8 @@ void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *bufPos, u8 *ringbufPos)
     vu8 writePos = *XGM2_PCM_RINGBUF_WRITEPOS_VAR;
 
     // While not up to speed on write pos:
-    while (writePos != writePosPrev) {
+    u8 maxIters = 3;
+    while (writePos != writePosPrev && maxIters--) {
 
         vu8 *write = (vu8 *) (XGM2_PCM_RINGBUF_ADDR + writePosPrev);
         s8 *read = (s8 *) (pcmSource512 + posAt);
@@ -113,6 +114,7 @@ void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *bufPos, u8 *ringbufPos)
         KLog_U2("Mix from ", read, " to ", write);
 #endif
 
+        // TODO Performance impact of this repeated call is huge - move this C loop into ASM
         XGM2_PCM_mixIntoRingBuffer_withOverflowProtection(read, write);
 
         writePosPrev += 0x40;

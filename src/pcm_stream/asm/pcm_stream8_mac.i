@@ -3,7 +3,7 @@
         move.l  (a0)+,(a1)+
 .endm   * 7 cycles per sample
 
-.macro  pcms8_renderpcm_1write_do64
+.macro  pcms8_renderpcm_1_to_dirty_do64
         pcms8_renderpcm_1_to_dirty_do4
         pcms8_renderpcm_1_to_dirty_do4
         pcms8_renderpcm_1_to_dirty_do4
@@ -23,11 +23,12 @@
         pcms8_renderpcm_1_to_dirty_do4
         pcms8_renderpcm_1_to_dirty_do4
         pcms8_renderpcm_1_to_dirty_do4
-.endm
+.endm * 448 cycles per chunk
+
 
 .macro  pcms8_renderpcm_2write_do1
         move.l  (a0)+,(a1+)
-.endm   * 448 cycles per chunk
+.endm   
 
 
 * 1 PCM to clean buffer

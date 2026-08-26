@@ -35,6 +35,12 @@
         move.b  (a2,d0.w),(a1)+
 .endm   * 42 cycles
 
+* TODO - Possible speedup for xgm2pcm_writebuf_clip_do1:
+* 64k LUT for high byte in a word from a0
+* Read w from a0 -> write a1 into lower byte -> read from LUT
+* Does not work for low byte - must keep above approach there
+* Tradeoff probably not worth it - 64kb for saving a few scanlines only
+
 .macro  xgm2pcm_writebuf_clip_do8
         xgm2pcm_writebuf_clip_do1
         xgm2pcm_writebuf_clip_do1

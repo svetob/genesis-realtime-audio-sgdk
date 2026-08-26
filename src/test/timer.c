@@ -19,12 +19,13 @@ static u16 sampleI = 0;
 /**
  * Reading the VCOUNTER properly turns out to require a PhD.
  *
- * Its behaviour depends on PAL vs NTSC,
- * 224 vs 240 scanline resolution,
- * and interlaced vs non-interlaced.
+ * Its behaviour and overflow point depends on:
+ * - PAL vs NTSC,
+ * - 224px (V28) vs 240px (V30) vertical screen resolution, and
+ * - interlaced vs non-interlaced mode.
  *
- * To keep things simple here, we assume:
- * V28 PAL non-interlaced.
+ * To keep things simple here, we just assume:
+ * V28 NTSC non-interlaced.
  *
  * Sources:
  * Genesis_Software_Manual.pdf

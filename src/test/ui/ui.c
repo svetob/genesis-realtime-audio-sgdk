@@ -10,19 +10,34 @@
 #include <test/timer.h>
 
 #define PCM_PLAYBACK_RATE 13300
-
 #define ECHO_BUFFER_SIZE  4096
+
+static const char *tabNames[] = {"STREAM", "FILTER", " ECHO ", "REVERB", "DRIVE ", "OUTPUT"};
+static const char *filterTypeNames[] = {"1-POLE 6db", "2-POLE 12db", "2-P RESONANT 12db"};
+static u8 tabParamCnt[] = {0, 3, 2, 0, 0, 0};
+
+// ===========================
+// PRIVATE
+// ===========================
+
+#define PARAM_ROW_FILTER_ENABLED 1
+#define PARAM_ROW_FILTER_TYPE    2
+#define PARAM_ROW_FILTER_FREQ    3
+#define PARAM_ROW_FILTER_Q       4
+
+#define PARAM_ROW_ECHO_ENABLED   1
+#define PARAM_ROW_ECHO_DELAY     2
+#define PARAM_ROW_ECHO_FEEDBACK  3
 
 static u8 currentTab = 0;
 static u8 currentRow = 0;
-
 static s8 tabRollerOffset = 0;
 
-static const char *tabNames[] = {"STREAM", "FILTER", " ECHO ", "REVERB", "DRIVE ", "OUTPUT"};
-static u8 tabParamCnt[] = {0, 3, 2, 0, 0, 0};
-
 static char uicharbuf[10];
-void writeParamU16(u16 val, char *unit, u16 x, u16 y, u8 minLen)
+
+static bool redrawParams;
+
+static void writeParamU16(u16 val, char *unit, u16 x, u16 y, u8 minLen)
 {
     intToStr(val, uicharbuf, minLen);
 
@@ -45,14 +60,25 @@ void writeParamU16(u16 val, char *unit, u16 x, u16 y, u8 minLen)
 
 static void changeParam(bool pressed, bool inc)
 {
+    // --- Filter ---
     if (currentTab == TAB_FILTER) {
-        if (currentRow == 1 && pressed) {
-            // Enabled
+        // Enabled
+        if (currentRow == PARAM_ROW_FILTER_ENABLED && pressed) {
             param_filter_enabled = !param_filter_enabled;
         }
 
-        if (currentRow == 2 && !pressed) {
-            // Freq
+        // Type
+        if (currentRow == PARAM_ROW_FILTER_TYPE && pressed) {
+            if (!inc && param_filter_type > 0) {
+                param_filter_type--;
+            }
+            if (inc && param_filter_type < 2) {
+                param_filter_type++;
+            }
+        }
+
+        // Freq
+        if (currentRow == PARAM_ROW_FILTER_FREQ && !pressed) {
             if (inc) {
                 if (param_filter_freq < 1000) {
                     param_filter_freq += 10;
@@ -68,8 +94,8 @@ static void changeParam(bool pressed, bool inc)
             }
         }
 
-        if (currentRow == 3 && !pressed) {
-            // Q
+        // Resonance (Q)
+        if (currentRow == PARAM_ROW_FILTER_Q && !pressed) {
             if (inc && param_filter_q < 65000) {
                 param_filter_q += 400;
             }
@@ -77,6 +103,8 @@ static void changeParam(bool pressed, bool inc)
                 param_filter_q -= 400;
             }
         }
+
+        filter_params_updated = true;
     }
 
     if (currentTab == TAB_ECHO) {
@@ -97,11 +125,19 @@ static void changeParam(bool pressed, bool inc)
                 }
             }
         }
+
+        echo_params_updated = true;
     }
+
+    redrawParams = true;
 }
 
 static void handleInputHeld(u16 joy)
 {
+    if (currentRow == 0) {
+        return;
+    }
+
     if (joy & BUTTON_LEFT) {
         changeParam(false, false);
     }
@@ -117,13 +153,14 @@ static void handleInput(u16 joy, u16 changed, u16 state)
         if (currentRow > 0) {
             currentRow -= 1;
         }
+        redrawParams = true;
     }
 
     if (changed & state & BUTTON_DOWN) {
-        KLog_U2("Tabrows ", tabParamCnt[currentTab], " currentTab ", currentTab);
         if (currentRow < tabParamCnt[currentTab]) {
             currentRow += 1;
         }
+        redrawParams = true;
     }
 
     if (changed & state & BUTTON_LEFT) {
@@ -131,10 +168,11 @@ static void handleInput(u16 joy, u16 changed, u16 state)
             if (currentTab > 0) {
                 currentTab--;
                 tabRollerOffset += 10;
+                redrawParams = true;
             }
+        } else {
+            changeParam(true, false);
         }
-
-        changeParam(true, false);
     }
 
     if (changed & state & BUTTON_RIGHT) {
@@ -142,10 +180,11 @@ static void handleInput(u16 joy, u16 changed, u16 state)
             if (currentTab < UI_TABS - 1) {
                 currentTab++;
                 tabRollerOffset -= 10;
+                redrawParams = true;
             }
+        } else {
+            changeParam(true, true);
         }
-
-        changeParam(true, true);
     }
 
     if (changed & state & BUTTON_A) {
@@ -165,7 +204,7 @@ static void handleInput(u16 joy, u16 changed, u16 state)
     }
 }
 
-void drawTabs()
+static void drawTabs()
 {
     s16 startX = 17;
     s16 Y = 10;
@@ -198,10 +237,14 @@ void drawTabs()
 #define YOFFSET 2
 #define XNAME   2
 #define XVALUE  22
-#define YPOS(x) (YTOP + (YOFFSET * x))
+#define YPOS(x) (YTOP + (YOFFSET * (x - 1)))
 
-void drawOptions()
+static void drawOptions()
 {
+    if (!redrawParams) {
+        return;
+    }
+
     VDP_clearTextArea(0, YTOP, 40, 20);
 
     if (currentRow > 0) {
@@ -209,25 +252,33 @@ void drawOptions()
     }
 
     if (currentTab == TAB_FILTER) {
-        VDP_drawText("         ENABLED", XNAME, YPOS(0));
-        VDP_drawText("     CUTOFF FREQ", XNAME, YPOS(1));
-        VDP_drawText("               Q", XNAME, YPOS(2));
+        VDP_drawText("         ENABLED", XNAME, YPOS(PARAM_ROW_FILTER_ENABLED));
+        VDP_drawText("     FILTER TYPE", XNAME, YPOS(PARAM_ROW_FILTER_TYPE));
+        VDP_drawText("     CUTOFF FREQ", XNAME, YPOS(PARAM_ROW_FILTER_FREQ));
+        VDP_drawText("   RESONANCE (Q)", XNAME, YPOS(PARAM_ROW_FILTER_Q));
 
-        VDP_drawText(param_filter_enabled ? "ON" : "OFF", XVALUE, YPOS(0));
-        writeParamU16(param_filter_freq, "Hz", XVALUE, YPOS(1), 4);
-        writeParamU16(param_filter_q, NULL, XVALUE, YPOS(2), 4);
+        VDP_drawText(param_filter_enabled ? "ON" : "OFF", XVALUE, YPOS(PARAM_ROW_FILTER_ENABLED));
+        VDP_drawText(filterTypeNames[param_filter_type], XVALUE, YPOS(PARAM_ROW_FILTER_TYPE));
+        writeParamU16(param_filter_freq, "Hz", XVALUE, YPOS(PARAM_ROW_FILTER_FREQ), 4);
+        writeParamU16(param_filter_q, NULL, XVALUE, YPOS(PARAM_ROW_FILTER_Q), 5);
     }
 
     if (currentTab == TAB_ECHO) {
-        VDP_drawText("         ENABLED", XNAME, YPOS(0));
-        VDP_drawText("     CUTOFF FREQ", XNAME, YPOS(1));
-        VDP_drawText("               Q", XNAME, YPOS(2));
+        VDP_drawText("         ENABLED", XNAME, YPOS(PARAM_ROW_ECHO_ENABLED));
+        VDP_drawText("           DELAY", XNAME, YPOS(PARAM_ROW_ECHO_DELAY));
+        VDP_drawText("        FEEDBACK", XNAME, YPOS(PARAM_ROW_ECHO_FEEDBACK));
 
-        VDP_drawText(param_echo_enabled ? "ON" : "OFF", XVALUE, YPOS(0));
-        writeParamU16(param_echo_delay, "samples", XVALUE, YPOS(1), 4);
-        writeParamU16(param_filter_q, NULL, XVALUE, YPOS(2), 4);
+        VDP_drawText(param_echo_enabled ? "ON" : "OFF", XVALUE, YPOS(PARAM_ROW_ECHO_ENABLED));
+        writeParamU16(param_echo_delay, "samples", XVALUE, YPOS(PARAM_ROW_ECHO_DELAY), 4);
+        writeParamU16(param_filter_q, NULL, XVALUE, YPOS(PARAM_ROW_ECHO_FEEDBACK), 4);
     }
+
+    redrawParams = false;
 }
+
+// ===========================
+// PUBLIC
+// ===========================
 
 void runUI()
 {
@@ -251,6 +302,8 @@ void runUI()
         drawTabs();
         drawOptions();
 
+        logNamedU16("SCANLINES", scanlines_avg, 1, 27, 3);
+
         // PCM Stream updates
         updateParams();
         updateStream(true);
@@ -265,14 +318,7 @@ void runUI()
 
         updateStream(false);
 
-        // while (GET_VCOUNTER < 210) {
-        // }
-
-        // updateStream(false);
-
         // Performance measurements
         scanlineTimerNextFrame();
-        logNamedU16("FRAMES", frame_ctr, 1, 26, 4);
-        logNamedU16("SCANLINES USED (AVG)", scanlines_avg, 1, 27, 3);
     }
 }
