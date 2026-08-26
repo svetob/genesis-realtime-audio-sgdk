@@ -8,7 +8,7 @@
 *     s8* delay_line,
 *     u16 pos,
 *     u16 len
-* ); 
+* );
 
 func    AFX16_echo_process256_ASM
         movem.l a0-a2/d0-d6,-(sp)
@@ -38,7 +38,7 @@ afx_echo_init:
 
 
 afx_echo_loop:
-    
+
 .L1:
         afx16_echo_doProcess
         afx16_echo_doProcess
@@ -60,8 +60,8 @@ afx_echo_loop:
 .L2:
         subi.w  #16,d0
         bne     .L1
-    
-    
+
+
 
 afx_echo_return:
         movem.l (sp)+,a0-a2/d0-d6

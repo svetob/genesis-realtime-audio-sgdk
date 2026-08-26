@@ -46,7 +46,7 @@ xgm2pcm_mixbuffer_do64:
 
 xgm2pcm_mixbuffer_ret:
         rts
-        
+
 
 * extern void XGM2_PCM_mixIntoRingBuffer_withOverflowProtection(s8* pcm, vu8* ringbuf)
 
@@ -62,11 +62,11 @@ xgm2pcm_mixbuffer_clip_init:
         lea     mixandclip_u8_table,a2
 
         * pcmSample     -> d0
-        moveq.l    #0,d0
+        moveq.l #0,d0
         * ringBufSample -> d1
-        moveq.l    #0,d1
+        moveq.l #0,d1
         * S8toU8const   -> d2
-        move.w  #0x0080,d2  
+        move.w  #0x0080,d2
 
 xgm2pcm_mixbuffer_clip_do64:
         xgm2pcm_writebuf_clip_do64
@@ -74,4 +74,3 @@ xgm2pcm_mixbuffer_clip_do64:
 xgm2pcm_mixbuffer_clip_ret:
         movem.l (sp)+,a2/d2
         rts
-        

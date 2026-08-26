@@ -13,7 +13,7 @@
         andi.l  #0x80808080,d6
         lsr.l   #7,d6
         add.l   d6,d4
-    
+
 * Get delay line sign bits into d6
         move.l  d4,d6
         andi.l  #0x80808080,d6
@@ -33,7 +33,7 @@
         move.l  d3,(a2)+
 .endm
 
-.macro afx8_echo_doProcess64
+.macro  afx8_echo_doProcess64
         afx8_echo_doProcess4
         afx8_echo_doProcess4
         afx8_echo_doProcess4

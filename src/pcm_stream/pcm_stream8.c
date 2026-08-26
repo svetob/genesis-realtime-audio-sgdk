@@ -5,6 +5,7 @@
 
 // #define DEBUG_LOG
 
+extern void PCM_STREAM8_clear64_ASM(void *buf, u16 len);
 extern void PCM_STREAM8_mixAndClip64_ASM(s8 *in, s8 *out, u16 len);
 
 // ===========================
@@ -51,12 +52,12 @@ static inline void renderSoundsToStream(void *buf, u16 len, PCMStream8 *stream)
  *      Renders currently playing sounds and instruments, then
  *      applies the processing callback.
  */
-static void renderStreamBuffer(u8 *buf, u16 len, PCMStream8 *stream)
+static inline void renderStreamBuffer(u8 *buf, u16 len, PCMStream8 *stream)
 {
 #ifdef DEBUG_LOG
     KLog_U2("Clearing at ", (u32) buf, ", len ", len);
 #endif
-    memsetU32(buf, 0, len >> 2);
+    PCM_STREAM8_clear64_ASM((void *) buf, len);
 
     renderSoundsToStream(buf, len, stream);
     doInstrumentCallback(buf, len, stream);
