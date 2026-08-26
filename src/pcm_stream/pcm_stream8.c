@@ -30,8 +30,8 @@ static inline void renderSoundsToStream(void *buf, u16 len, PCMStream8 *stream)
 {
     if (stream->pcm_sound != NULL) {
 #ifdef DEBUG_LOG
-        KLog_U3("Playing sound stream16 - from 8bit PCM at ", (u32) stream->pcm_sound,
-                ", to 8bit buf ", (u32) buf, ", len remaining ", stream->pcm_remain);
+        KLog_U3("Playing 8bit PCM at ", (u32) stream->pcm_sound, ", to 8bit buf ", (u32) buf,
+                ", len remaining ", stream->pcm_remain);
 #endif
         u16 renderLen = stream->pcm_remain > len ? len : stream->pcm_remain;
 

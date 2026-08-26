@@ -71,7 +71,7 @@ xgm2pcm_mixbuffer_clip_init:
         move.l  36(sp),d3                       // pcmPos        -> d3
         move.l  40(sp),d4                       // ringPosWrite  -> d
         move.w  46(sp),d5                       // ringPosStop   -> d5
-        moveq   #2,d6                           // maxIters      -> d6 (3 max iterations)
+        moveq   #3,d6                           // maxIters      -> d6
 
 xgm2pcm_mixbuffer_clip_do64:
 .L1:
@@ -83,7 +83,8 @@ xgm2pcm_mixbuffer_clip_do64:
         xgm2pcm_writebuf_clip_do64
 
 xgm2pcm_mixbuffer_clip_loop:
-        dbra    d6,.L2                          // Exit loop after max iterations
+        subq.b  #1,d6
+        beq     .L2                             // Exit loop after max iterations
 
         addi.w  #0x40,d3                        // Increment and wrap pcmPos
         andi.w  #0x01FF,d3
