@@ -5,6 +5,7 @@
 
 // #define DEBUG_LOG
 
+extern void PCM_STREAM8_clear64_ASM(void *buf, u16 len);
 extern void PCM_STREAM8_mixAndClip64_ASM(s8 *in, s8 *out, u16 len);
 
 // ===========================
@@ -29,8 +30,8 @@ static inline void renderSoundsToStream(void *buf, u16 len, PCMStream8 *stream)
 {
     if (stream->pcm_sound != NULL) {
 #ifdef DEBUG_LOG
-        KLog_U3("Playing sound stream16 - from 8bit PCM at ", (u32) stream->pcm_sound,
-                ", to 8bit buf ", (u32) buf, ", len remaining ", stream->pcm_remain);
+        KLog_U3("Playing 8bit PCM at ", (u32) stream->pcm_sound, ", to 8bit buf ", (u32) buf,
+                ", len remaining ", stream->pcm_remain);
 #endif
         u16 renderLen = stream->pcm_remain > len ? len : stream->pcm_remain;
 
@@ -51,12 +52,12 @@ static inline void renderSoundsToStream(void *buf, u16 len, PCMStream8 *stream)
  *      Renders currently playing sounds and instruments, then
  *      applies the processing callback.
  */
-static void renderStreamBuffer(u8 *buf, u16 len, PCMStream8 *stream)
+static inline void renderStreamBuffer(u8 *buf, u16 len, PCMStream8 *stream)
 {
 #ifdef DEBUG_LOG
     KLog_U2("Clearing at ", (u32) buf, ", len ", len);
 #endif
-    memset(buf, 0, len);
+    PCM_STREAM8_clear64_ASM((void *) buf, len);
 
     renderSoundsToStream(buf, len, stream);
     doInstrumentCallback(buf, len, stream);
@@ -74,9 +75,9 @@ PCMStream8 *PCM_STREAM_create(SoundPCMChannel channel)
 
     PCMStream8 *stream = MEM_alloc(sizeof(PCMStream8));
     stream->buffer = buf;
-    stream->bufferPos = 0;
-    stream->bufferPosPrev = 0;
-    stream->ringbufPos = XGM2_PCM_peek_ringbuf_writepos();
+    stream->mixer.bufferPos = 0;
+    stream->mixer.ringPosPrev = XGM2_PCM_peek_ringbuf_writepos();
+    stream->mixer.pcmWasPlaying = XGM2_PCM_peek_ringbuf_writepos();
 
     stream->isPlaying = false;
 
@@ -96,7 +97,10 @@ void PCM_STREAM_reset(PCMStream8 *stream)
 {
     memsetU32(stream->buffer, 0, PCM_STREAM8_SIZE >> 2);
 
-    stream->bufferPos = 0;
+    stream->mixer.bufferPos = 0;
+    stream->mixer.ringPosPrev = XGM2_PCM_peek_ringbuf_writepos();
+    stream->mixer.pcmWasPlaying = XGM2_PCM_peek_ringbuf_writepos();
+
     stream->bufferPosPrev = 0;
     stream->isPlaying = false;
     stream->pcm_sound = NULL;
@@ -112,12 +116,12 @@ void PCM_STREAM_free(PCMStream8 *stream)
 void PCM_STREAM_start(PCMStream8 *stream)
 {
     stream->isPlaying = true;
-    stream->bufferPos = 0;
+    stream->mixer.bufferPos = 0;
     stream->bufferPosPrev = 0;
     renderStreamBuffer(stream->buffer, PCM_STREAM8_SIZE, stream);
 
     XGM2_PCM_activate();
-    stream->ringbufPos = XGM2_PCM_peek_ringbuf_writepos();
+    stream->mixer.ringPosPrev = XGM2_PCM_peek_ringbuf_writepos();
 }
 
 void PCM_STREAM_stop(PCMStream8 *stream)
@@ -135,10 +139,10 @@ void PCM_STREAM_update(PCMStream8 *stream, bool render)
     KLog("Updating PCM Stream");
 #endif
 
-    XGM2_PCM_mix_into_ringbuf(stream->buffer, &(stream->bufferPos), &(stream->ringbufPos));
+    XGM2_PCM_mix_into_ringbuf(stream->buffer, &(stream->mixer));
 
     if (render) {
-        if (stream->bufferPos < stream->bufferPosPrev) {
+        if (stream->mixer.bufferPos < stream->bufferPosPrev) {
             u16 renderLen = PCM_STREAM8_SIZE - stream->bufferPosPrev;
 #ifdef DEBUG_LOG
             KLog_U4("Rendering to buf ", (u32) stream->buffer, ", bufferPos ", stream->bufferPos,
@@ -148,14 +152,14 @@ void PCM_STREAM_update(PCMStream8 *stream, bool render)
             stream->bufferPosPrev = 0;
         }
 
-        if (stream->bufferPos > stream->bufferPosPrev) {
-            u16 renderLen = stream->bufferPos - stream->bufferPosPrev;
+        if (stream->mixer.bufferPos > stream->bufferPosPrev) {
+            u16 renderLen = stream->mixer.bufferPos - stream->bufferPosPrev;
 #ifdef DEBUG_LOG
             KLog_U4("Rendering to buf ", (u32) stream->buffer, ", bufferPos ", stream->bufferPos,
                     ", bufferPosPrev ", stream->bufferPosPrev, ", renderLen ", renderLen);
 #endif
             renderStreamBuffer(stream->buffer + stream->bufferPosPrev, renderLen, stream);
-            stream->bufferPosPrev = stream->bufferPos;
+            stream->bufferPosPrev = stream->mixer.bufferPos;
         }
     }
 }

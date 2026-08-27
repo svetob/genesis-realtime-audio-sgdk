@@ -21,5 +21,3 @@
         move.l  d3,(a0)+
         move.l  d3,(a2)+
 .endm
-
-

@@ -18,8 +18,18 @@
       "**/.git": true,
     },
     "m68k.vasm.provideDiagnostics": false,
+    "files.associations": {
+      "*.s": "m68k",
+      "*.i": "m68k",
+      "*.asm": "m68k",
+    },
     "[m68k]": {
       "editor.rulers": [],
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "gigabates.m68k-lsp",
+      "files.trimTrailingWhitespace": true,
+      "files.insertFinalNewline": true,
+      "files.trimFinalNewlines": true,
     },
   },
 }

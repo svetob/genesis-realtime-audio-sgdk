@@ -14,12 +14,15 @@
 // ===========================
 
 bool param_filter_enabled = true;
-u16 param_filter_freq = 2000;
+FilterLPType param_filter_type = FILTER_LP_2_POLE_RESONANT;
+u16 param_filter_freq = 4000;
 u16 param_filter_q = 40000;
+bool filter_params_updated = false;
 
 bool param_echo_enabled = true;
 u16 param_echo_delay = 4096;
 u8 param_echo_feedback = 220;
+bool echo_params_updated = false;
 
 // ===========================
 // PRIVATE
@@ -63,7 +66,7 @@ void startStream()
     }
 
     if (afx_filter_lp == NULL) {
-        afx_filter_lp = AFX8_filter_lp_create(2000, 45875);
+        afx_filter_lp = AFX8_filter_lp_create(FILTER_LP_2_POLE_RESONANT, 2000, 45875);
     }
 
     PCM_STREAM_start(pcm_stream);
@@ -72,8 +75,17 @@ void startStream()
 void updateParams()
 {
     scanlineTimerStart();
-    AFX8_filter_lp_update(afx_filter_lp, param_filter_freq, param_filter_q);
-    AFX8_echo_update(afx_echo, param_echo_delay);
+
+    if (filter_params_updated) {
+        AFX8_filter_lp_setType(afx_filter_lp, param_filter_type);
+        AFX8_filter_lp_update(afx_filter_lp, param_filter_freq, param_filter_q);
+        filter_params_updated = false;
+    }
+    if (echo_params_updated) {
+        AFX8_echo_update(afx_echo, param_echo_delay);
+        AFX8_echo_reset(afx_echo);
+        echo_params_updated = false;
+    }
     scanlineTimerStop();
 }
 
@@ -90,10 +102,10 @@ void resetStream()
     PCM_STREAM_reset(pcm_stream);
 
     AFX8_echo_free(afx_echo);
-    AFX8_echo_create(ECHO_BUFFER_SIZE, param_echo_delay);
+    afx_echo = AFX8_echo_create(ECHO_BUFFER_SIZE, param_echo_delay);
 
     AFX8_filter_lp_free(afx_filter_lp);
-    afx_filter_lp = AFX8_filter_lp_create(2000, 45875);
+    afx_filter_lp = AFX8_filter_lp_create(param_filter_type, 2000, 45875);
 
     PCM_STREAM_start(pcm_stream);
 }

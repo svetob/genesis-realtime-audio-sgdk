@@ -12,7 +12,7 @@ pcms16_renderout_init:
         movea.l 20(sp),a0
         * outBuf -> a1
         movea.l 24(sp),a1
-        
+
         lea     downscale_table,a2
         move.l  #0,d0
 

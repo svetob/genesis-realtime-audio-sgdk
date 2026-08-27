@@ -7,36 +7,44 @@
 // #define DEBUG_LOG
 // #define DEBUG_LOG_TRACE
 
-extern void AFX8_filter_lp_process256_ASM(s8 *samples, u16 len, void *mult_table_f_dec,
-                                          void *mult_table_fb_int, void *mult_table_fb_dec,
-                                          s8 *buf0, s8 *buf1);
+extern void AFX8_filter_lp_1pole_process64_ASM(s8 *samples, u16 len, void *mult_table_f_dec,
+                                               s8 *buf0);
 
-/*
-//set feedback amount given f and q between 0 and 1
-fb = q + q/(1.0 - f);
+extern void AFX8_filter_lp_2pole_process16_ASM(s8 *samples, u16 len, void *mult_table_f_dec,
+                                               s8 *buf0, s8 *buf1);
 
-//for each sample...
-buf0 = buf0 + f * (in - buf0 + fb * (buf0 - buf1));
-buf1 = buf1 + f * (buf0 - buf1);
-out = buf1;
-
-
-// Example:
-sample rate = 13300hz
-nyqvist freq = 6650hz
-
-f = 800hz
-q = 0.7
-
-gives:
-
-f = (800 / 6650) * 65536 = (800 << 16) / 6650 = 7884
-q = 0.7 * 65536 = 45875
-fb = 45875 + (45875 * 65536) / (65536 - 7884) = 45875 + 3006464000 / 57652 = 45875 + 52148 = 98023
-*/
+extern void AFX8_filter_lp_2pole_resonant_process16_ASM(s8 *samples, u16 len,
+                                                        void *mult_table_f_dec,
+                                                        void *mult_table_fb_int,
+                                                        void *mult_table_fb_dec, s8 *buf0,
+                                                        s8 *buf1);
 
 u32 calculateFeedback(u32 f, s32 q)
 {
+    /*
+    //set feedback amount given f and q between 0 and 1
+    fb = q + q/(1.0 - f);
+
+    //for each sample...
+    buf0 = buf0 + f * (in - buf0 + fb * (buf0 - buf1));
+    buf1 = buf1 + f * (buf0 - buf1);
+    out = buf1;
+
+    // Example:
+    sample rate = 13300hz
+    nyqvist freq = 6650hz
+
+    f = 800hz
+    q = 0.7
+
+    gives:
+
+    f = (800 / 6650) * 65536 = (800 << 16) / 6650 = 7884
+    q = 0.7 * 65536 = 45875
+    fb = 45875 + (45875 * 65536) / (65536 - 7884) = 45875 + 3006464000 / 57652 = 45875 + 52148 =
+    98023
+    */
+
     u32 divisor = (65536 - f);
     if (divisor < 100) {
         divisor = 100;
@@ -54,9 +62,10 @@ u32 calculateFeedback(u32 f, s32 q)
     return fb;
 }
 
-AFX8FilterLP *AFX8_filter_lp_create(u32 cutoffFreq, s32 q)
+AFX8FilterLP *AFX8_filter_lp_create(FilterLPType type, u32 cutoffFreq, s32 q)
 {
     AFX8FilterLP *filter = (AFX8FilterLP *) MEM_alloc(sizeof(AFX8FilterLP));
+    filter->type = type;
     filter->buf0 = 0;
     filter->buf1 = 0;
 
@@ -65,7 +74,12 @@ AFX8FilterLP *AFX8_filter_lp_create(u32 cutoffFreq, s32 q)
     return filter;
 }
 
-AFX8FilterLP *AFX8_filter_lp_update(AFX8FilterLP *filter, u32 cutoffFreq, s32 q)
+void AFX8_filter_lp_setType(AFX8FilterLP *filter, FilterLPType type)
+{
+    filter->type = type;
+}
+
+void AFX8_filter_lp_update(AFX8FilterLP *filter, u32 cutoffFreq, s32 q)
 {
     if (cutoffFreq < 20) {
         cutoffFreq = 20;
@@ -77,13 +91,15 @@ AFX8FilterLP *AFX8_filter_lp_update(AFX8FilterLP *filter, u32 cutoffFreq, s32 q)
     u32 f = (cutoffFreq << 16) / (PCM_PLAYBACK_RATE / 2);
 
     filter->f = f;
-    filter->q = q;
-    filter->fb = calculateFeedback(f, q);
+    filter->mul_table_f_dec = (void *) mult_s8_dec + (filter->f & 0x0000FF00);
 
-    filter->mul_table_f_dec = mult_s8_dec + (filter->f & 0x0000FF00);
+    if (filter->type == FILTER_LP_2_POLE_RESONANT) {
+        filter->q = q;
+        filter->fb = calculateFeedback(f, q);
 
-    filter->mul_table_fb_int = mult_s8_int + ((filter->fb & 0x00FF0000) >> 8);
-    filter->mul_table_fb_dec = mult_s8_dec + (filter->fb & 0x0000FF00);
+        filter->mul_table_fb_int = (void *) mult_s8_int + ((filter->fb & 0x00FF0000) >> 8);
+        filter->mul_table_fb_dec = (void *) mult_s8_dec + (filter->fb & 0x0000FF00);
+    }
 
 #ifdef DEBUG_LOG
     logNamedU32("cut", cutoffFreq, 15, 1, 1);
@@ -96,8 +112,6 @@ AFX8FilterLP *AFX8_filter_lp_update(AFX8FilterLP *filter, u32 cutoffFreq, s32 q)
     logNamedPtr("mult fb int", filter->mul_table_fb_int, 15, 8);
     logNamedPtr("mult fb dec", filter->mul_table_fb_dec, 15, 9);
 #endif
-
-    return filter;
 }
 
 void AFX8_filter_lp_free(AFX8FilterLP *filter)
@@ -107,6 +121,16 @@ void AFX8_filter_lp_free(AFX8FilterLP *filter)
 
 void AFX8_filter_lp_process(s8 *samples, u16 len, AFX8FilterLP *filter)
 {
-    AFX8_filter_lp_process256_ASM(samples, len, filter->mul_table_f_dec, filter->mul_table_fb_int,
-                                  filter->mul_table_fb_dec, &(filter->buf0), &(filter->buf1));
+    if (filter->type == FILTER_LP_1_POLE) {
+        AFX8_filter_lp_1pole_process64_ASM(samples, len, filter->mul_table_f_dec, &(filter->buf0));
+    }
+    if (filter->type == FILTER_LP_2_POLE) {
+        AFX8_filter_lp_2pole_process16_ASM(samples, len, filter->mul_table_f_dec, &(filter->buf0),
+                                           &(filter->buf1));
+    }
+    if (filter->type == FILTER_LP_2_POLE_RESONANT) {
+        AFX8_filter_lp_2pole_resonant_process16_ASM(
+            samples, len, filter->mul_table_f_dec, filter->mul_table_fb_int,
+            filter->mul_table_fb_dec, &(filter->buf0), &(filter->buf1));
+    }
 }

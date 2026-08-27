@@ -5,7 +5,16 @@
 
 // #define DEBUG_LOG
 
-static u16 scanlines[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+#define SCANLINE_AVG_OF 8
+
+#if (SCANLINE_AVG_OF & (SCANLINE_AVG_OF - 1)) != 0
+#error "SCANLINE_AVG_OF must be power of two"
+#endif
+
+#define SCANLINE_AVG_OF_RSHIFT __builtin_ctz(SCANLINE_AVG_OF)
+#define SCANLINE_AVG_OF_MASK   (SCANLINE_AVG_OF - 1)
+
+static u16 scanlines[SCANLINE_AVG_OF];
 static u8 scanlines_pos = 0;
 static u16 startLine;
 
@@ -19,12 +28,13 @@ static u16 sampleI = 0;
 /**
  * Reading the VCOUNTER properly turns out to require a PhD.
  *
- * Its behaviour depends on PAL vs NTSC,
- * 224 vs 240 scanline resolution,
- * and interlaced vs non-interlaced.
+ * Its behaviour and overflow point depends on:
+ * - PAL vs NTSC,
+ * - 224px (V28) vs 240px (V30) vertical screen resolution, and
+ * - interlaced vs non-interlaced mode.
  *
- * To keep things simple here, we assume:
- * V28 PAL non-interlaced.
+ * To keep things simple here, we just assume:
+ * V28 NTSC non-interlaced.
  *
  * Sources:
  * Genesis_Software_Manual.pdf
@@ -54,10 +64,17 @@ static inline u16 calcVCounterInterval(u16 start, u16 end)
     }
 }
 
-// Avoids measurement issues by waiting for VCounter to reset to 0
+// Avoids measurement issues by waiting for VCounter to pass VBlank and overflow section
 void scanlineTimerWait()
 {
-    while (GET_VCOUNTER > 223) {
+    while (GET_VCOUNTER > 200 && GET_VCOUNTER <= VC_OVERFLOW_UPPER) {
+    }
+}
+
+void scanlineTimerInit()
+{
+    for (u8 i = 0; i < SCANLINE_AVG_OF; i++) {
+        scanlines[i] = 0;
     }
 }
 
@@ -90,27 +107,14 @@ void scanlineTimerNextFrame()
     // Calculate scanline average
     scanlines_avg = 0;
 
-    scanlines_avg += scanlines[0];
-    scanlines_avg += scanlines[1];
-    scanlines_avg += scanlines[2];
-    scanlines_avg += scanlines[3];
-    scanlines_avg += scanlines[4];
-    scanlines_avg += scanlines[5];
-    scanlines_avg += scanlines[6];
-    scanlines_avg += scanlines[7];
-    scanlines_avg += scanlines[8];
-    scanlines_avg += scanlines[9];
-    scanlines_avg += scanlines[10];
-    scanlines_avg += scanlines[11];
-    scanlines_avg += scanlines[12];
-    scanlines_avg += scanlines[13];
-    scanlines_avg += scanlines[14];
-    scanlines_avg += scanlines[15];
+    for (u8 i = 0; i < SCANLINE_AVG_OF; i++) {
+        scanlines_avg += scanlines[i];
+    }
 
-    scanlines_avg = scanlines_avg >> 4;
+    scanlines_avg = scanlines_avg >> SCANLINE_AVG_OF_RSHIFT;
 
     // Increment scanline array position
-    scanlines_pos = (scanlines_pos + 1) & 0x0F;
+    scanlines_pos = (scanlines_pos + 1) & SCANLINE_AVG_OF_MASK;
     scanlines[scanlines_pos] = 0;
 
 #ifdef DEBUG_LOG
