@@ -2,7 +2,7 @@
 #define __TESTUI_H
 
 #include <genesis.h>
-#include <audiofx/filter_lp8.h>
+#include <audiofx/filterlp.h>
 
 typedef enum {
     TAB_STREAM = 0,

@@ -1,25 +1,27 @@
 #include <genesis.h>
 #include "pcm_stream.h"
-#include "filter_lp8.h"
-#include "../pcm_stream/const.h"
+#include "filterlp.h"
+#include "../pcmstream/const.h"
 #include "../test/log.h"
 
 // #define DEBUG_LOG
 // #define DEBUG_LOG_TRACE
 
-extern void AFX8_filter_lp_1pole_process64_ASM(s8 *samples, u16 len, void *mult_table_f_dec,
-                                               s8 *buf0);
+// ===========================
+// PRIVATE
+// ===========================
 
-extern void AFX8_filter_lp_2pole_process16_ASM(s8 *samples, u16 len, void *mult_table_f_dec,
-                                               s8 *buf0, s8 *buf1);
+extern void AFX_filter_lp_1pole_process64_ASM(s8 *samples, u16 len, void *mult_table_f_dec,
+                                              s8 *buf0);
 
-extern void AFX8_filter_lp_2pole_resonant_process16_ASM(s8 *samples, u16 len,
-                                                        void *mult_table_f_dec,
-                                                        void *mult_table_fb_int,
-                                                        void *mult_table_fb_dec, s8 *buf0,
-                                                        s8 *buf1);
+extern void AFX_filter_lp_2pole_process16_ASM(s8 *samples, u16 len, void *mult_table_f_dec,
+                                              s8 *buf0, s8 *buf1);
 
-u32 calculateFeedback(u32 f, s32 q)
+extern void AFX_filter_lp_2pole_resonant_process16_ASM(s8 *samples, u16 len, void *mult_table_f_dec,
+                                                       void *mult_table_fb_int,
+                                                       void *mult_table_fb_dec, s8 *buf0, s8 *buf1);
+
+static inline u32 calculateFeedback(u32 f, s32 q)
 {
     /*
     //set feedback amount given f and q between 0 and 1
@@ -62,24 +64,28 @@ u32 calculateFeedback(u32 f, s32 q)
     return fb;
 }
 
-AFX8FilterLP *AFX8_filter_lp_create(FilterLPType type, u32 cutoffFreq, s32 q)
+// ===========================
+// PUBLIC
+// ===========================
+
+AFXFilterLP *AFX_filter_lp_create(FilterLPType type, u32 cutoffFreq, s32 q)
 {
-    AFX8FilterLP *filter = (AFX8FilterLP *) MEM_alloc(sizeof(AFX8FilterLP));
+    AFXFilterLP *filter = (AFXFilterLP *) MEM_alloc(sizeof(AFXFilterLP));
     filter->type = type;
     filter->buf0 = 0;
     filter->buf1 = 0;
 
-    AFX8_filter_lp_update(filter, cutoffFreq, q);
+    AFX_filter_lp_update(filter, cutoffFreq, q);
 
     return filter;
 }
 
-void AFX8_filter_lp_setType(AFX8FilterLP *filter, FilterLPType type)
+void AFX_filter_lp_setType(AFXFilterLP *filter, FilterLPType type)
 {
     filter->type = type;
 }
 
-void AFX8_filter_lp_update(AFX8FilterLP *filter, u32 cutoffFreq, s32 q)
+void AFX_filter_lp_update(AFXFilterLP *filter, u32 cutoffFreq, s32 q)
 {
     if (cutoffFreq < 20) {
         cutoffFreq = 20;
@@ -93,7 +99,7 @@ void AFX8_filter_lp_update(AFX8FilterLP *filter, u32 cutoffFreq, s32 q)
     filter->f = f;
     filter->mul_table_f_dec = (void *) mult_s8_dec + (filter->f & 0x0000FF00);
 
-    if (filter->type == FILTER_LP_2_POLE_RESONANT) {
+    if (filter->type == FILTER_LP_2POLE_RESONANT) {
         filter->q = q;
         filter->fb = calculateFeedback(f, q);
 
@@ -114,22 +120,22 @@ void AFX8_filter_lp_update(AFX8FilterLP *filter, u32 cutoffFreq, s32 q)
 #endif
 }
 
-void AFX8_filter_lp_free(AFX8FilterLP *filter)
+void AFX_filter_lp_free(AFXFilterLP *filter)
 {
     MEM_free(filter);
 }
 
-void AFX8_filter_lp_process(s8 *samples, u16 len, AFX8FilterLP *filter)
+void AFX_filter_lp_process(s8 *samples, u16 len, AFXFilterLP *filter)
 {
-    if (filter->type == FILTER_LP_1_POLE) {
-        AFX8_filter_lp_1pole_process64_ASM(samples, len, filter->mul_table_f_dec, &(filter->buf0));
+    if (filter->type == FILTER_LP_1POLE) {
+        AFX_filter_lp_1pole_process64_ASM(samples, len, filter->mul_table_f_dec, &(filter->buf0));
     }
-    if (filter->type == FILTER_LP_2_POLE) {
-        AFX8_filter_lp_2pole_process16_ASM(samples, len, filter->mul_table_f_dec, &(filter->buf0),
-                                           &(filter->buf1));
+    if (filter->type == FILTER_LP_2POLE) {
+        AFX_filter_lp_2pole_process16_ASM(samples, len, filter->mul_table_f_dec, &(filter->buf0),
+                                          &(filter->buf1));
     }
-    if (filter->type == FILTER_LP_2_POLE_RESONANT) {
-        AFX8_filter_lp_2pole_resonant_process16_ASM(
+    if (filter->type == FILTER_LP_2POLE_RESONANT) {
+        AFX_filter_lp_2pole_resonant_process16_ASM(
             samples, len, filter->mul_table_f_dec, filter->mul_table_fb_int,
             filter->mul_table_fb_dec, &(filter->buf0), &(filter->buf1));
     }

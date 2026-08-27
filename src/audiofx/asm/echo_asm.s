@@ -1,8 +1,8 @@
 #include "asm_mac.i"
-#include "echo8_mac.i"
+#include "echo_mac.i"
 
 
-* extern void AFX8_echo_process64_ASM(
+* extern void AFX_echo_process64_ASM(
 *     s8* samples,
 *     u16 size,
 *     s8* delay_line,
@@ -10,7 +10,7 @@
 *     u16 len
 * );
 
-func    AFX8_echo_process64_ASM
+func    AFX_echo_process64_ASM
         movem.l a0-a2/d0-d6,-(sp)
 
 afx_echo_init:

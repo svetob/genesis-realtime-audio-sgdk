@@ -1,5 +1,5 @@
 #include <genesis.h>
-#include "xgm2_pcm.h"
+#include "xgm2pcm.h"
 
 // Uncomment to enable GensKmod debug logging
 // #define DEBUG_LOG
@@ -133,7 +133,6 @@ void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, XGM2PCMMixerStatus *mixerStat
             XGM2_PCM_mixIntoRingBuffer_withOverflowProtection_ASM(pcmSource512, mixerStatus);
         } else {
             // PCM ring buffer is clean - just overwrite it
-            // XGM2_PCM_mixIntoRingBuffer_withOverflowProtection_ASM(pcmSource512, mixerStatus);
             XGM2_PCM_overwriteRingBuffer_ASM(pcmSource512, mixerStatus);
         }
     }

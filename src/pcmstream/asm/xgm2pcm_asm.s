@@ -1,5 +1,5 @@
 #include "asm_mac.i"
-#include "xgm2_pcm_mac.i"
+#include "xgm2pcm_mac.i"
 
 * extern u16 XGM2_PCM_SYS_disableInts_fast_noStack()
 

@@ -1,7 +1,7 @@
 #include "asm_mac.i"
-#include "filter_lp8_mac.i"
+#include "filterlp_mac.i"
 
-* extern void AFX8_filter_lp_2pole_resonant_process16_ASM(
+* extern void AFX_filter_lp_2pole_resonant_process16_ASM(
 *     s8* samples,
 *     u16 len,
 *     void* mult_table_f_dec,
@@ -11,7 +11,7 @@
 *     s8* buf1
 * );
 
-func    AFX8_filter_lp_2pole_resonant_process16_ASM
+func    AFX_filter_lp_2pole_resonant_process16_ASM
         movem.l a2-a3/d2-d5,-(sp)
 
 afx8_filter_lp_2poleres_init:
@@ -61,7 +61,7 @@ afx8_filter_lp_2poleres_ret:
         rts
 
 
-* extern void AFX8_filter_lp_2pole_process16_ASM(
+* extern void AFX_filter_lp_2pole_process16_ASM(
 *     s8* samples,
 *     u16 len,
 *     void* mult_table_f_dec,
@@ -69,7 +69,7 @@ afx8_filter_lp_2poleres_ret:
 *     s8* buf1
 * );
 
-func    AFX8_filter_lp_2pole_process16_ASM
+func    AFX_filter_lp_2pole_process16_ASM
         movem.l d2-d4,-(sp)
 
 afx8_filter_lp_2pole_init:
@@ -115,14 +115,14 @@ afx8_filter_lp_2pole_ret:
 
 
 
-* extern void AFX8_filter_lp_1pole_process64_ASM(
+* extern void AFX_filter_lp_1pole_process64_ASM(
 *     s8* samples,
 *     u16 len,
 *     void* mult_table_f_dec,
 *     s8* buf0
 * );
 
-func    AFX8_filter_lp_1pole_process64_ASM
+func    AFX_filter_lp_1pole_process64_ASM
         move.l  d2,-(sp)
 
 afx8_filter_lp_1pole_init:

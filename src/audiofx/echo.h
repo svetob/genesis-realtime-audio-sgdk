@@ -12,7 +12,7 @@ typedef struct {
     u16 size;
     u16 delay;
     u16 pos;
-} AFX8Echo;
+} AFXEcho;
 
 /**
  * \brief
@@ -25,7 +25,7 @@ typedef struct {
  *      Delay, in samples. Must be multiple of 256 and not
  *      greater than bufferSize.
  */
-AFX8Echo *AFX8_echo_create(u16 bufferSize, u16 delay);
+AFXEcho *AFX_echo_create(u16 bufferSize, u16 delay);
 
 /**
  * \brief
@@ -35,19 +35,19 @@ AFX8Echo *AFX8_echo_create(u16 bufferSize, u16 delay);
  *      Delay, in samples. Must be multiple of 256 and not
  *      greater than bufferSize.
  */
-void AFX8_echo_update(AFX8Echo *afx, u16 delay);
+void AFX_echo_update(AFXEcho *afx, u16 delay);
 
 /**
  * \brief
  *      Free effect from memory.
  */
-void AFX8_echo_free(AFX8Echo *afx);
+void AFX_echo_free(AFXEcho *afx);
 
 /**
  * \brief
  *      Reset echo.
  */
-void AFX8_echo_reset(AFX8Echo *afx);
+void AFX_echo_reset(AFXEcho *afx);
 
 /**
  * \brief
@@ -59,6 +59,6 @@ void AFX8_echo_reset(AFX8Echo *afx);
  * \param afx
  *      8-bit Echo Audio Effect
  */
-void AFX8_echo_process(s8 *samples, u16 len, AFX8Echo *afx);
+void AFX_echo_process(s8 *samples, u16 len, AFXEcho *afx);
 
 #endif

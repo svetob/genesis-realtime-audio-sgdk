@@ -1,5 +1,5 @@
 #include "asm_mac.i"
-#include "pcm_stream8_mac.i"
+#include "pcmstream_mac.i"
 
 
 * extern void PCM_STREAM8_clear64_ASM(void *buf, u16 len);

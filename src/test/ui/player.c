@@ -2,9 +2,9 @@
 #include "resources.h"
 #include "ui.h"
 
-#include <audiofx/echo8.h>
-#include <audiofx/filter_lp8.h>
-#include <pcm_stream/pcm_stream8.h>
+#include <audiofx/echo.h>
+#include <audiofx/filterlp.h>
+#include <pcmstream/pcmstream.h>
 
 #include <test/log.h>
 #include <test/timer.h>
@@ -14,7 +14,7 @@
 // ===========================
 
 bool param_filter_enabled = true;
-FilterLPType param_filter_type = FILTER_LP_2_POLE_RESONANT;
+FilterLPType param_filter_type = FILTER_LP_2POLE_RESONANT;
 u16 param_filter_freq = 4000;
 u16 param_filter_q = 40000;
 bool filter_params_updated = false;
@@ -31,19 +31,19 @@ bool echo_params_updated = false;
 #define PCM_PLAYBACK_RATE 13300
 #define ECHO_BUFFER_SIZE  4096
 
-static PCMStream8 *pcm_stream = NULL;
-static AFX8Echo *afx_echo = NULL;
-static AFX8FilterLP *afx_filter_lp = NULL;
+static PCMStream *pcm_stream = NULL;
+static AFXEcho *afx_echo = NULL;
+static AFXFilterLP *afx_filter_lp = NULL;
 
 static bool vgm_is_playing = false;
 
 static void streamProcessingCallback(s8 *stream, u16 len, void *data)
 {
     if (param_filter_enabled) {
-        AFX8_filter_lp_process((s8 *) stream, len, afx_filter_lp);
+        AFX_filter_lp_process((s8 *) stream, len, afx_filter_lp);
     }
     if (param_echo_enabled) {
-        AFX8_echo_process((s8 *) stream, len, afx_echo);
+        AFX_echo_process((s8 *) stream, len, afx_echo);
     }
 }
 
@@ -62,11 +62,11 @@ void startStream()
     }
 
     if (afx_echo == NULL) {
-        afx_echo = AFX8_echo_create(ECHO_BUFFER_SIZE, param_echo_delay);
+        afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE, param_echo_delay);
     }
 
     if (afx_filter_lp == NULL) {
-        afx_filter_lp = AFX8_filter_lp_create(FILTER_LP_2_POLE_RESONANT, 2000, 45875);
+        afx_filter_lp = AFX_filter_lp_create(FILTER_LP_2POLE_RESONANT, 2000, 45875);
     }
 
     PCM_STREAM_start(pcm_stream);
@@ -77,13 +77,13 @@ void updateParams()
     scanlineTimerStart();
 
     if (filter_params_updated) {
-        AFX8_filter_lp_setType(afx_filter_lp, param_filter_type);
-        AFX8_filter_lp_update(afx_filter_lp, param_filter_freq, param_filter_q);
+        AFX_filter_lp_setType(afx_filter_lp, param_filter_type);
+        AFX_filter_lp_update(afx_filter_lp, param_filter_freq, param_filter_q);
         filter_params_updated = false;
     }
     if (echo_params_updated) {
-        AFX8_echo_update(afx_echo, param_echo_delay);
-        AFX8_echo_reset(afx_echo);
+        AFX_echo_update(afx_echo, param_echo_delay);
+        AFX_echo_reset(afx_echo);
         echo_params_updated = false;
     }
     scanlineTimerStop();
@@ -101,11 +101,11 @@ void resetStream()
     PCM_STREAM_stop(pcm_stream);
     PCM_STREAM_reset(pcm_stream);
 
-    AFX8_echo_free(afx_echo);
-    afx_echo = AFX8_echo_create(ECHO_BUFFER_SIZE, param_echo_delay);
+    AFX_echo_free(afx_echo);
+    afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE, param_echo_delay);
 
-    AFX8_filter_lp_free(afx_filter_lp);
-    afx_filter_lp = AFX8_filter_lp_create(param_filter_type, 2000, 45875);
+    AFX_filter_lp_free(afx_filter_lp);
+    afx_filter_lp = AFX_filter_lp_create(param_filter_type, 2000, 45875);
 
     PCM_STREAM_start(pcm_stream);
 }

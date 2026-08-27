@@ -2,9 +2,9 @@
 #include "resources.h"
 #include "ui.h"
 
-#include <audiofx/echo8.h>
-#include <audiofx/filter_lp8.h>
-#include <pcm_stream/pcm_stream8.h>
+#include <audiofx/echo.h>
+#include <audiofx/filterlp.h>
+#include <pcmstream/pcmstream.h>
 
 #include <test/log.h>
 #include <test/timer.h>

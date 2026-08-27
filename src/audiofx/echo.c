@@ -1,9 +1,9 @@
 #include <genesis.h>
-#include "echo8.h"
+#include "echo.h"
 
-extern void AFX8_echo_process64_ASM(s8 *samples, u16 size, s8 *delay_line, u16 pos, u16 len);
+extern void AFX_echo_process64_ASM(s8 *samples, u16 size, s8 *delay_line, u16 pos, u16 len);
 
-AFX8Echo *AFX8_echo_create(u16 bufferSize, u16 delay)
+AFXEcho *AFX_echo_create(u16 bufferSize, u16 delay)
 {
     delay = delay & 0xFF00;           // Must be multiple of 256
     bufferSize = bufferSize & 0xFF00; // Must be multiple of 256
@@ -11,7 +11,7 @@ AFX8Echo *AFX8_echo_create(u16 bufferSize, u16 delay)
     void *buf = MEM_alloc(bufferSize);
     memset(buf, 0, bufferSize);
 
-    AFX8Echo *afx = (AFX8Echo *) MEM_alloc(sizeof(AFX8Echo));
+    AFXEcho *afx = (AFXEcho *) MEM_alloc(sizeof(AFXEcho));
     afx->delayLine = buf;
     afx->size = bufferSize;
     afx->delay = delay;
@@ -20,19 +20,19 @@ AFX8Echo *AFX8_echo_create(u16 bufferSize, u16 delay)
     return afx;
 }
 
-void AFX8_echo_free(AFX8Echo *afx)
+void AFX_echo_free(AFXEcho *afx)
 {
     MEM_free(afx->delayLine);
     MEM_free(afx);
 }
 
-void AFX8_echo_reset(AFX8Echo *afx)
+void AFX_echo_reset(AFXEcho *afx)
 {
     memset(afx->delayLine, 0, afx->size);
     afx->pos = 0;
 }
 
-void AFX8_echo_update(AFX8Echo *afx, u16 delay)
+void AFX_echo_update(AFXEcho *afx, u16 delay)
 {
     if (delay != afx->delay) {
         delay = delay & 0xFF00; // Must be multiple of 256
@@ -47,9 +47,9 @@ void AFX8_echo_update(AFX8Echo *afx, u16 delay)
     }
 }
 
-void AFX8_echo_process(s8 *samples, u16 len, AFX8Echo *afx)
+void AFX_echo_process(s8 *samples, u16 len, AFXEcho *afx)
 {
-    AFX8_echo_process64_ASM(samples, len, afx->delayLine, afx->pos, afx->delay);
+    AFX_echo_process64_ASM(samples, len, afx->delayLine, afx->pos, afx->delay);
 
     afx->pos += len;
     if (afx->pos >= afx->delay) {

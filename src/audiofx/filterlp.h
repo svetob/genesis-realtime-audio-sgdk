@@ -18,9 +18,9 @@
  */
 
 typedef enum {
-    FILTER_LP_1_POLE = 0,
-    FILTER_LP_2_POLE = 1,
-    FILTER_LP_2_POLE_RESONANT = 2,
+    FILTER_LP_1POLE = 0,
+    FILTER_LP_2POLE = 1,
+    FILTER_LP_2POLE_RESONANT = 2,
 } FilterLPType;
 
 typedef struct {
@@ -36,12 +36,12 @@ typedef struct {
 
     s8 buf0;
     s8 buf1;
-} AFX8FilterLP;
+} AFXFilterLP;
 
-AFX8FilterLP *AFX8_filter_lp_create(FilterLPType type, u32 cutoffFreq, s32 q);
-void AFX8_filter_lp_update(AFX8FilterLP *filter, u32 cutoffFreq, s32 q);
-void AFX8_filter_lp_setType(AFX8FilterLP *filter, FilterLPType type);
-void AFX8_filter_lp_free(AFX8FilterLP *filter);
-void AFX8_filter_lp_process(s8 *samples, u16 len, AFX8FilterLP *filter);
+AFXFilterLP *AFX_filter_lp_create(FilterLPType type, u32 cutoffFreq, s32 q);
+void AFX_filter_lp_update(AFXFilterLP *filter, u32 cutoffFreq, s32 q);
+void AFX_filter_lp_setType(AFXFilterLP *filter, FilterLPType type);
+void AFX_filter_lp_free(AFXFilterLP *filter);
+void AFX_filter_lp_process(s8 *samples, u16 len, AFXFilterLP *filter);
 
 #endif
