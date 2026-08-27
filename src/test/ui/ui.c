@@ -331,6 +331,8 @@ void runUI()
         logNamedU16("SCANLINES", scanlines_avg, 1, 27, 3);
 
         // PCM Stream updates
+        scanlineTimerWait();
+
         updateParams();
         updateStream(true);
 

@@ -55,10 +55,10 @@ static inline u16 calcVCounterInterval(u16 start, u16 end)
     }
 }
 
-// Avoids measurement issues by waiting for VCounter to reset to 0
+// Avoids measurement issues by waiting for VCounter to pass VBlank and overflow section
 void scanlineTimerWait()
 {
-    while (GET_VCOUNTER > 223) {
+    while (GET_VCOUNTER > 200 && GET_VCOUNTER <= VC_OVERFLOW_UPPER) {
     }
 }
 
