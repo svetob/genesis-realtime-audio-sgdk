@@ -83,6 +83,7 @@ void updateParams()
     }
     if (echo_params_updated) {
         AFX8_echo_update(afx_echo, param_echo_delay);
+        AFX8_echo_reset(afx_echo);
         echo_params_updated = false;
     }
     scanlineTimerStop();

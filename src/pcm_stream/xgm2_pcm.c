@@ -4,6 +4,8 @@
 // Uncomment to enable GensKmod debug logging
 // #define DEBUG_LOG
 
+// #define CHECK_PCM_PLAY_STATUS
+
 // Fast custom bus accesses save about 4 scanlines
 // Comment out to use default SGDK bus access functions
 #define XGM2_PCM_FAST_BUS_ACCESS
@@ -83,6 +85,18 @@ u8 XGM2_PCM_peek_ringbuf_writepos()
     return pos;
 }
 
+u8 XGM2_PCM_peek_pcm_channel_status()
+{
+    enterBus();
+
+    vu8 status = *((vu8 *) Z80_DRV_STATUS);
+    u8 pcmPlaying = status & XGM2_PCM_PLAYING_MASK;
+
+    exitBus();
+
+    return pcmPlaying;
+}
+
 void XGM2_PCM_activate()
 {
     enterBus();
@@ -102,16 +116,22 @@ void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *bufPos, u8 *ringbufPos)
     *XGM2_DAC_ENABLE = 0x80;
     *XGM2_DAC_ENABLED_CNT = 0x04;
 
+#ifdef CHECK_PCM_PLAY_STATUS
+    /**
+     * TODO: Read if any PCM sample plays are currently active.
+     *       If not we can overwrite instead of mix in.
+     *       We can only skip overflow protection if this and previous
+     *       check both found no playing samples.
+     */
+
+    // Get driver status
+    vu8 status = *((vu8 *) Z80_DRV_STATUS);
+    u8 pcmPlaying = status & XGM2_PCM_PLAYING_MASK;
+#endif
+
     // Get current write pos
     vu8 ringWritePos = *XGM2_PCM_RINGBUF_WRITEPOS_VAR;
     if (ringWritePos != ringWritePosPrev) {
-
-        /**
-         * TODO: Read if any PCM sample plays are currently active.
-         *       If not we can overwrite instead of mix in.
-         *       We can only skip overflow protection if this and previous
-         *       check both found no playing samples.
-         */
 
 #ifdef DEBUG_LOG
         KLog_U2("Mixing from ", pcmSource512 + posAt, " to ",

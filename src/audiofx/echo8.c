@@ -26,6 +26,12 @@ void AFX8_echo_free(AFX8Echo *afx)
     MEM_free(afx);
 }
 
+void AFX8_echo_reset(AFX8Echo *afx)
+{
+    memset(afx->delayLine, 0, afx->size);
+    afx->pos = 0;
+}
+
 void AFX8_echo_update(AFX8Echo *afx, u16 delay)
 {
     if (delay != afx->delay) {
@@ -35,7 +41,7 @@ void AFX8_echo_update(AFX8Echo *afx, u16 delay)
         }
         afx->delay = delay;
 
-        while (afx->pos > delay) {
+        while (afx->pos >= delay) {
             afx->pos -= delay;
         }
     }

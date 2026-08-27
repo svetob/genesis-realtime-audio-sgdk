@@ -75,9 +75,9 @@ PCMStream8 *PCM_STREAM_create(SoundPCMChannel channel)
 
     PCMStream8 *stream = MEM_alloc(sizeof(PCMStream8));
     stream->buffer = buf;
-    stream->bufferPos = 0;
-    stream->bufferPosPrev = 0;
-    stream->ringbufPos = XGM2_PCM_peek_ringbuf_writepos();
+    stream->mixer.bufferPos = 0;
+    stream->mixer.ringPosPrev = XGM2_PCM_peek_ringbuf_writepos();
+    stream->mixer.pcmWasPlaying = XGM2_PCM_peek_ringbuf_writepos();
 
     stream->isPlaying = false;
 
@@ -97,7 +97,10 @@ void PCM_STREAM_reset(PCMStream8 *stream)
 {
     memsetU32(stream->buffer, 0, PCM_STREAM8_SIZE >> 2);
 
-    stream->bufferPos = 0;
+    stream->mixer.bufferPos = 0;
+    stream->mixer.ringPosPrev = XGM2_PCM_peek_ringbuf_writepos();
+    stream->mixer.pcmWasPlaying = XGM2_PCM_peek_ringbuf_writepos();
+
     stream->bufferPosPrev = 0;
     stream->isPlaying = false;
     stream->pcm_sound = NULL;
@@ -113,12 +116,12 @@ void PCM_STREAM_free(PCMStream8 *stream)
 void PCM_STREAM_start(PCMStream8 *stream)
 {
     stream->isPlaying = true;
-    stream->bufferPos = 0;
+    stream->mixer.bufferPos = 0;
     stream->bufferPosPrev = 0;
     renderStreamBuffer(stream->buffer, PCM_STREAM8_SIZE, stream);
 
     XGM2_PCM_activate();
-    stream->ringbufPos = XGM2_PCM_peek_ringbuf_writepos();
+    stream->mixer.ringPosPrev = XGM2_PCM_peek_ringbuf_writepos();
 }
 
 void PCM_STREAM_stop(PCMStream8 *stream)
@@ -136,10 +139,11 @@ void PCM_STREAM_update(PCMStream8 *stream, bool render)
     KLog("Updating PCM Stream");
 #endif
 
-    XGM2_PCM_mix_into_ringbuf(stream->buffer, &(stream->bufferPos), &(stream->ringbufPos));
+    XGM2_PCM_mix_into_ringbuf(stream->buffer, &(stream->mixer.bufferPos),
+                              &(stream->mixer.ringPosPrev));
 
     if (render) {
-        if (stream->bufferPos < stream->bufferPosPrev) {
+        if (stream->mixer.bufferPos < stream->bufferPosPrev) {
             u16 renderLen = PCM_STREAM8_SIZE - stream->bufferPosPrev;
 #ifdef DEBUG_LOG
             KLog_U4("Rendering to buf ", (u32) stream->buffer, ", bufferPos ", stream->bufferPos,
@@ -149,14 +153,14 @@ void PCM_STREAM_update(PCMStream8 *stream, bool render)
             stream->bufferPosPrev = 0;
         }
 
-        if (stream->bufferPos > stream->bufferPosPrev) {
-            u16 renderLen = stream->bufferPos - stream->bufferPosPrev;
+        if (stream->mixer.bufferPos > stream->bufferPosPrev) {
+            u16 renderLen = stream->mixer.bufferPos - stream->bufferPosPrev;
 #ifdef DEBUG_LOG
             KLog_U4("Rendering to buf ", (u32) stream->buffer, ", bufferPos ", stream->bufferPos,
                     ", bufferPosPrev ", stream->bufferPosPrev, ", renderLen ", renderLen);
 #endif
             renderStreamBuffer(stream->buffer + stream->bufferPosPrev, renderLen, stream);
-            stream->bufferPosPrev = stream->bufferPos;
+            stream->bufferPosPrev = stream->mixer.bufferPos;
         }
     }
 }

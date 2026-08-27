@@ -41,6 +41,11 @@ afx_echo_loop:
 .L1:
         afx8_echo_doProcess64
 
+        cmpa.l  d5,a2
+        bcs     .L2
+        move.l  a1,a2
+
+.L2:
         subi.w  #64,d0
         bne     .L1
 

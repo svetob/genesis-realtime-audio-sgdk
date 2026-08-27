@@ -45,6 +45,12 @@ void AFX8_echo_free(AFX8Echo *afx);
 
 /**
  * \brief
+ *      Reset echo.
+ */
+void AFX8_echo_reset(AFX8Echo *afx);
+
+/**
+ * \brief
  *      Process 256 samples through Echo Audio Effect.
  *
  * \param samples

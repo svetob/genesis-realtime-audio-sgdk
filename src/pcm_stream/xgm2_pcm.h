@@ -17,11 +17,26 @@
 #define XGM2_DAC_ENABLE               (vu8 *) (XGM2_VARS + 0x59)
 #define XGM2_DAC_ENABLED_CNT          (vu8 *) (XGM2_VARS + 0xE9)
 
+#define XGM2_PCM_PLAYING_MASK \
+    SOUND_PCM_CH1_MSK | SOUND_PCM_CH2_MSK | SOUND_PCM_CH3_MSK | SOUND_PCM_CH4_MSK
+
+typedef struct {
+    u16 bufferPos;
+    u8 ringPosPrev;
+    bool pcmWasPlaying;
+} XGM2PCMMixerStatus;
+
 /**
  * \brief
  *      Reads current write position of XGM2 PCM ring buffer.
  */
 u8 XGM2_PCM_peek_ringbuf_writepos();
+
+/**
+ * \brief
+ *      Returns current playing status of PCM channels 1-4.
+ */
+u8 XGM2_PCM_peek_pcm_channel_status();
 
 /**
  * \brief

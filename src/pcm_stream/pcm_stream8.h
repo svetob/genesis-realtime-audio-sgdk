@@ -4,6 +4,7 @@
 #include <genesis.h>
 
 #include "const.h"
+#include "xgm2_pcm.h"
 
 /**
  *  \brief
@@ -60,10 +61,11 @@ typedef void PCMStream8ProcessingCallback(s8 *stream, u16 len, void *data);
  *      Sound PCM Stream data struct
  */
 typedef struct {
-    void *buffer; // Output buffer
-    u16 bufferPos;
+    void *buffer;
+
+    XGM2PCMMixerStatus mixer;
+
     u16 bufferPosPrev;
-    u8 ringbufPos;  // Previous ring buffer write position
     bool isPlaying; // Current playback status
 
     // AudioFX callback
