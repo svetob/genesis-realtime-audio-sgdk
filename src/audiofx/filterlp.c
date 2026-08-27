@@ -4,6 +4,52 @@
 #include "../pcmstream/const.h"
 #include "../test/log.h"
 
+/**
+ * 8-bit LP Filter implementations.
+ *
+ * Three filter types are available: 1POLE, 2POLE, 2POLE_RESONANT.
+ *
+ * The 2POLE_RESONANT implementation is based on:
+ * https://www.musicdsp.org/en/latest/Filters/29-resonant-filter.html
+ *
+ * ```
+ *      //set feedback amount given f and q between 0 and 1
+ *      fb = q + q/(1.0 - f);
+ *
+ *      //for each sample...
+ *      buf0 = buf0 + f * (in - buf0 + fb * (buf0 - buf1));
+ *      buf1 = buf1 + f * (buf0 - buf1);
+ *      out = buf1;
+ * ```
+ *
+ * The 2POLE implementation removes the feedback step from the above,
+ * and ignores the Q parameter:
+ *
+ * ```
+ *      //for each sample...
+ *      buf0 = buf0 + f * (in - buf0);
+ *      buf1 = buf1 + f * (buf0 - buf1);
+ *      out = buf1;
+ * ```
+ *
+ * The 1POLE implementation further removes the second chained filter:
+ *
+ * ```
+ *      //for each sample...
+ *      buf0 = buf0 + f * (in - buf0);
+ *      out = buf0;
+ * ```
+ *
+ * While the 2POLE_RESONANT filter sounds better under ideal conditions,
+ * it also requires more cpu time, and is vulnerable to overflow, self
+ * oscillation, and leaving behind audible noise floors.
+ *
+ * For the most easy to use filter with good sound and performance, the
+ * 2POLE filter is the recommended one. The 1POLE filter can be used if
+ * you are tight on CPU resources.
+ *
+ */
+
 // #define DEBUG_LOG
 // #define DEBUG_LOG_TRACE
 
@@ -94,6 +140,20 @@ void AFX_filter_lp_update(AFXFilterLP *filter, u32 cutoffFreq, s32 q)
         cutoffFreq = (PCM_PLAYBACK_RATE / 2) - 100;
     }
 
+    /**
+     * TODO: FIX INCORRECT RESPONSE CURVE
+     *
+     * Although the filter works, this does not give the correct linear response curve.
+     * The correct algoritm for computing f from freq and samplerate is in comment thread
+     * from 2006-09-12 by peter schoffhauzer:
+     *
+     * f = 2.0*sin(pi*freq/samplerate);
+     *
+     * This should go into perhaps a 1024-byte LUT. The input cutoffFreq should then be in
+     * range [0-1023] representing a linear curve where 0 is 40hz and 1023 is samplerate/2.
+     * We could also allow toggling between exponential and linear response curve here with
+     * two different LUTs.
+     */
     u32 f = (cutoffFreq << 16) / (PCM_PLAYBACK_RATE / 2);
 
     filter->f = f;
