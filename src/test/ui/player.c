@@ -54,11 +54,11 @@ static void streamProcessingCallback(s8 *stream, u16 len, void *data)
 void startStream()
 {
     if (pcm_stream == NULL) {
-        pcm_stream = PCM_STREAM_create(SOUND_PCM_CH3);
-        PCM_STREAM_setProcessingCallback(streamProcessingCallback, NULL, pcm_stream);
+        pcm_stream = PCMSTREAM_create(SOUND_PCM_CH3);
+        PCMSTREAM_setProcessingCallback(streamProcessingCallback, NULL, pcm_stream);
     } else {
-        PCM_STREAM_stop(pcm_stream);
-        PCM_STREAM_reset(pcm_stream);
+        PCMSTREAM_stop(pcm_stream);
+        PCMSTREAM_reset(pcm_stream);
     }
 
     if (afx_echo == NULL) {
@@ -66,10 +66,11 @@ void startStream()
     }
 
     if (afx_filter_lp == NULL) {
-        afx_filter_lp = AFX_filter_lp_create(FILTER_LP_2POLE_RESONANT, 2000, 45875);
+        afx_filter_lp =
+            AFX_filter_lp_create(FILTER_LP_2POLE_RESONANT, param_filter_freq, param_filter_q);
     }
 
-    PCM_STREAM_start(pcm_stream);
+    PCMSTREAM_start(pcm_stream);
 }
 
 void updateParams()
@@ -92,14 +93,14 @@ void updateParams()
 void updateStream(bool renderNext)
 {
     scanlineTimerStart();
-    PCM_STREAM_update(pcm_stream, renderNext);
+    PCMSTREAM_update(pcm_stream, renderNext);
     scanlineTimerStop();
 }
 
 void resetStream()
 {
-    PCM_STREAM_stop(pcm_stream);
-    PCM_STREAM_reset(pcm_stream);
+    PCMSTREAM_stop(pcm_stream);
+    PCMSTREAM_reset(pcm_stream);
 
     AFX_echo_free(afx_echo);
     afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE, param_echo_delay);
@@ -107,17 +108,17 @@ void resetStream()
     AFX_filter_lp_free(afx_filter_lp);
     afx_filter_lp = AFX_filter_lp_create(param_filter_type, 2000, 45875);
 
-    PCM_STREAM_start(pcm_stream);
+    PCMSTREAM_start(pcm_stream);
 }
 
 void playSoundSweep()
 {
-    PCM_STREAM_playSound((u8 *) wav_saw_sweep, sizeof(wav_saw_sweep), pcm_stream);
+    PCMSTREAM_playSound((u8 *) wav_saw_sweep, sizeof(wav_saw_sweep), pcm_stream);
 }
 
 void playSoundSnare()
 {
-    PCM_STREAM_playSound((u8 *) wav_snare_rim, sizeof(wav_snare_rim), pcm_stream);
+    PCMSTREAM_playSound((u8 *) wav_snare_rim, sizeof(wav_snare_rim), pcm_stream);
 }
 
 void toggleVGM()

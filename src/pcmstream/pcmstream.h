@@ -1,5 +1,5 @@
-#ifndef __PCM_STREAM8_H
-#define __PCM_STREAM8_H
+#ifndef __PCMSTREAM_H
+#define __PCMSTREAM_H
 
 #include <genesis.h>
 
@@ -11,10 +11,10 @@
  *      Current playback status of stream
  */
 typedef enum {
-    PCM_STREAM_STATUS_STOPPED = 0,         // Stream is stopped
-    PCM_STREAM_STATUS_PLAYING = 1,         // Stream has just started playing
-    PCM_STREAM_STATUS_PLAYING_BUFFER0 = 2, // First buffer of stream is playing
-    PCM_STREAM_STATUS_PLAYING_BUFFER1 = 3, // Second buffer of stream is playing
+    PCMSTREAM_STATUS_STOPPED = 0,         // Stream is stopped
+    PCMSTREAM_STATUS_PLAYING = 1,         // Stream has just started playing
+    PCMSTREAM_STATUS_PLAYING_BUFFER0 = 2, // First buffer of stream is playing
+    PCMSTREAM_STATUS_PLAYING_BUFFER1 = 3, // Second buffer of stream is playing
 } PCMStreamStatus;
 
 /**
@@ -29,7 +29,7 @@ typedef enum {
  *      The PCM stream to apply instrument output onto.
  *
  * \param len
- *      Number of samples to process. Always equal to PCM_STREAM_BUFFER_SIZE.
+ *      Number of samples to process. Always a multiple of PCMSTREAM_CHUNK_SIZE.
  *
  * \param data
  *      Data for the instrument.<br>
@@ -48,7 +48,7 @@ typedef void PCMStreamInstrumentCallback(s8 *stream, u16 len, void *data);
  *      The PCM stream to apply audio proccessing onto.
  *
  * \param len
- *      Number of samples to process. Always equal to PCM_STREAM_BUFFER_SIZE.
+ *      Number of samples to process. Always a multiple of PCMSTREAM_CHUNK_SIZE.
  *
  * \param data
  *      Data for the audio processor.<br>
@@ -81,20 +81,20 @@ typedef struct {
     void *inst_cb_data;
 } PCMStream;
 
-PCMStream *PCM_STREAM_create(SoundPCMChannel channel);
-void PCM_STREAM_reset(PCMStream *stream);
-void PCM_STREAM_free(PCMStream *stream);
+PCMStream *PCMSTREAM_create(SoundPCMChannel channel);
+void PCMSTREAM_reset(PCMStream *stream);
+void PCMSTREAM_free(PCMStream *stream);
 
-void PCM_STREAM_update(PCMStream *stream, bool renderNext);
+void PCMSTREAM_update(PCMStream *stream, bool renderNext);
 
-void PCM_STREAM_start(PCMStream *stream);
-void PCM_STREAM_isPlaying(PCMStream *stream);
-void PCM_STREAM_stop(PCMStream *stream);
+void PCMSTREAM_start(PCMStream *stream);
+void PCMSTREAM_isPlaying(PCMStream *stream);
+void PCMSTREAM_stop(PCMStream *stream);
 
-void PCM_STREAM_playSound(u8 *pcm, u16 len, PCMStream *stream);
-void PCM_STREAM_setInstrumentCallback(PCMStreamInstrumentCallback *callback, void *callbackData,
-                                      PCMStream *stream);
-void PCM_STREAM_setProcessingCallback(PCMStreamProcessingCallback *callback, void *callbackData,
-                                      PCMStream *stream);
+void PCMSTREAM_playSound(u8 *pcm, u16 len, PCMStream *stream);
+void PCMSTREAM_setInstrumentCallback(PCMStreamInstrumentCallback *callback, void *callbackData,
+                                     PCMStream *stream);
+void PCMSTREAM_setProcessingCallback(PCMStreamProcessingCallback *callback, void *callbackData,
+                                     PCMStream *stream);
 
 #endif

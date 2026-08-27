@@ -49,7 +49,7 @@ static u8 redrawParamRow = 0;
 static char paramStrBuf[10];
 static u8 paramToStrU16(u16 val, char *unit, u8 minLen)
 {
-    intToStr(val, paramStrBuf, minLen);
+    uintToStr(val, paramStrBuf, minLen);
 
     u8 len = 0;
     char *charAt = paramStrBuf;

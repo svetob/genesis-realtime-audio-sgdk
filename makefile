@@ -19,6 +19,9 @@ asm-motorola: asm
 build-sgdk:
 	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makelib.gen
 
+run-mame: build
+	$(MAME_PATH)\mame.exe genesis -cart $(OUT)\rom.bin
+
 debug-mame: build
 	$(MAME_PATH)\mame.exe genesis -cart $(OUT)\rom.bin -debug
 
