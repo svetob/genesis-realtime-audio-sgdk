@@ -6,7 +6,7 @@
 
 // Fast custom bus accesses save about 4 scanlines
 // Comment out to use default SGDK bus access functions
-#define XGM2_PCM_FAST
+#define XGM2_PCM_FAST_BUS_ACCESS
 
 // ===========================
 // PRIVATE
@@ -17,7 +17,7 @@ extern void XGM2_PCM_mixIntoRingBuffer_withOverflowProtection_ASM(s8 *pcmBuf, vu
                                                                   u16 *pcmPos, u8 ringPosWrite,
                                                                   u8 ringPosStop);
 
-#ifdef XGM2_PCM_FAST
+#ifdef XGM2_PCM_FAST_BUS_ACCESS
 
 u16 intsPrev;
 
@@ -66,7 +66,7 @@ static inline void exitBus()
     SYS_enableInts();
 }
 
-#endif // XGM2_PCM_FAST
+#endif // XGM2_PCM_FAST_BUS_ACCESS
 
 // ===========================
 // PUBLIC
@@ -105,6 +105,14 @@ void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *bufPos, u8 *ringbufPos)
     // Get current write pos
     vu8 ringWritePos = *XGM2_PCM_RINGBUF_WRITEPOS_VAR;
     if (ringWritePos != ringWritePosPrev) {
+
+        /**
+         * TODO: Read if any PCM sample plays are currently active.
+         *       If not we can overwrite instead of mix in.
+         *       We can only skip overflow protection if this and previous
+         *       check both found no playing samples.
+         */
+
 #ifdef DEBUG_LOG
         KLog_U2("Mixing from ", pcmSource512 + posAt, " to ",
                 XGM2_PCM_RINGBUF_ADDR + ringWritePosPrev, ", stop at ",
