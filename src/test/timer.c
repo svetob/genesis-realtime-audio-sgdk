@@ -5,7 +5,16 @@
 
 // #define DEBUG_LOG
 
-static u16 scanlines[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+#define SCANLINE_AVG_OF 8
+
+#if (SCANLINE_AVG_OF & (SCANLINE_AVG_OF - 1)) != 0
+#error "SCANLINE_AVG_OF must be power of two"
+#endif
+
+#define SCANLINE_AVG_OF_RSHIFT __builtin_ctz(SCANLINE_AVG_OF)
+#define SCANLINE_AVG_OF_MASK   (SCANLINE_AVG_OF - 1)
+
+static u16 scanlines[SCANLINE_AVG_OF];
 static u8 scanlines_pos = 0;
 static u16 startLine;
 
@@ -62,6 +71,13 @@ void scanlineTimerWait()
     }
 }
 
+void scanlineTimerInit()
+{
+    for (u8 i = 0; i < SCANLINE_AVG_OF; i++) {
+        scanlines[i] = 0;
+    }
+}
+
 void scanlineTimerStart()
 {
     startLine = GET_VCOUNTER;
@@ -91,27 +107,14 @@ void scanlineTimerNextFrame()
     // Calculate scanline average
     scanlines_avg = 0;
 
-    scanlines_avg += scanlines[0];
-    scanlines_avg += scanlines[1];
-    scanlines_avg += scanlines[2];
-    scanlines_avg += scanlines[3];
-    scanlines_avg += scanlines[4];
-    scanlines_avg += scanlines[5];
-    scanlines_avg += scanlines[6];
-    scanlines_avg += scanlines[7];
-    scanlines_avg += scanlines[8];
-    scanlines_avg += scanlines[9];
-    scanlines_avg += scanlines[10];
-    scanlines_avg += scanlines[11];
-    scanlines_avg += scanlines[12];
-    scanlines_avg += scanlines[13];
-    scanlines_avg += scanlines[14];
-    scanlines_avg += scanlines[15];
+    for (u8 i = 0; i < SCANLINE_AVG_OF; i++) {
+        scanlines_avg += scanlines[i];
+    }
 
-    scanlines_avg = scanlines_avg >> 4;
+    scanlines_avg = scanlines_avg >> SCANLINE_AVG_OF_RSHIFT;
 
     // Increment scanline array position
-    scanlines_pos = (scanlines_pos + 1) & 0x0F;
+    scanlines_pos = (scanlines_pos + 1) & SCANLINE_AVG_OF_MASK;
     scanlines[scanlines_pos] = 0;
 
 #ifdef DEBUG_LOG
