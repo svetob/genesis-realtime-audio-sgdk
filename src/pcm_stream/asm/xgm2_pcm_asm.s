@@ -50,36 +50,48 @@ xgm2pcm_mixbuffer_ret:
 
 * extern void XGM2_PCM_mixIntoRingBuffer_withOverflowProtection_ASM(
 *     s8* pcmBuf,
-*     vu8* ringBuf,
-*     u16 pcmPos,
-*     u8 ringPosWrite,
-*     u8 ringPosStop
+*     XGM2PCMMixerStatus *status,
 * )
 
 func    XGM2_PCM_mixIntoRingBuffer_withOverflowProtection_ASM
-        movem.l a2/d2-d6,-(sp)
+        movem.l a2-a3/d2-d6,-(sp)
 
 xgm2pcm_mixbuffer_clip_init:
-        *                                       // pcmBuf        -> a0
-        *                                       // ringBuf       -> a1
-        lea     mixandclip_u8_table,a2          // LUT           -> a2
+        moveq.l #0,d3
+        moveq.l #0,d4
+        moveq.l #0,d5
 
+        * pcmBuf         -> a0
 
-        moveq.l #0,d0                           // pcmSample     -> d0
-        moveq.l #0,d1                           // ringBufSample -> d1
-        move.w  #0x0080,d2                      // S8toU8const   -> d2
-        move.l  36(sp),a0                       // pcmPos        -> d3
-        clr.l   d3
-        move.w  (a0),d3
-        move.l  40(sp),d4                       // ringPosWrite  -> d4
-        move.l  44(sp),d5                       // ringPosStop   -> d5
-        moveq   #3,d6                           // maxIters      -> d6
+        * ringBuf        -> a1
+
+        * LUT            -> a2
+        lea     mixandclip_u8_table,a2
+        * mixerStatusPtr -> a3
+        move.l  36(sp),a3
+
+        * pcmSample      -> d0
+        moveq.l #0,d0
+        * ringBufSample  -> d1
+        moveq.l #0,d1
+        * S8toU8const    -> d2
+        move.w  #0x0080,d2
+        * pcmPos         -> d3
+        move.w  (a3),d3
+        * ringPosWrite   -> d4
+        move.b  2(a3),d4
+        * ringPosStop    -> d5
+        movea.l #0x00A001F8,a0
+        move.b  (a0),d5
+        * maxIters       -> d6
+        moveq   #3,d6
 
 xgm2pcm_mixbuffer_clip_do64:
 .L1:
-        movea.l 28(sp),a0
+        movea.l 32(sp),a0
         adda.l  d3,a0
-        movea.l 32(sp),a1                       // TODO Make const instead of arg
+        * TODO Read from some existing const
+        movea.l #0x00a01900,a1
         adda.l  d4,a1
 
         xgm2pcm_writebuf_clip_do64
@@ -99,8 +111,8 @@ xgm2pcm_mixbuffer_clip_loop:
 
 xgm2pcm_mixbuffer_clip_ret:
 .L2:
-        move.l  36(sp),a0                       // Write back pcmPos into memory
-        move.w  d3,(a0)
+        move.w  d3,(a3)                         // Write back pcmPos into memory
+        move.b  d4,2(a3)                        // Write back ringPosPrev into memory
 
-        movem.l (sp)+,a2/d2-d6
+        movem.l (sp)+,a2-a3/d2-d6
         rts

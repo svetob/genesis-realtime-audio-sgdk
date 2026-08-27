@@ -15,9 +15,8 @@
 // ===========================
 
 extern void XGM2_PCM_mixIntoRingBuffer(s8 *pcm, vu8 *ringbuf);
-extern void XGM2_PCM_mixIntoRingBuffer_withOverflowProtection_ASM(s8 *pcmBuf, vu8 *ringBuf,
-                                                                  u16 *pcmPos, u8 ringPosWrite,
-                                                                  u8 ringPosStop);
+extern void XGM2_PCM_mixIntoRingBuffer_withOverflowProtection_ASM(s8 *pcmBuf,
+                                                                  XGM2PCMMixerStatus *status);
 
 #ifdef XGM2_PCM_FAST_BUS_ACCESS
 
@@ -107,10 +106,8 @@ void XGM2_PCM_activate()
     exitBus();
 }
 
-void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *bufPos, u8 *ringbufPos)
+void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, XGM2PCMMixerStatus *status)
 {
-    u8 ringWritePosPrev = *ringbufPos;
-
     enterBus();
 
     *XGM2_DAC_ENABLE = 0x80;
@@ -131,20 +128,15 @@ void XGM2_PCM_mix_into_ringbuf(void *pcmSource512, u16 *bufPos, u8 *ringbufPos)
 
     // Get current write pos
     vu8 ringWritePos = *XGM2_PCM_RINGBUF_WRITEPOS_VAR;
-    if (ringWritePos != ringWritePosPrev) {
+    if (ringWritePos != status->ringPosPrev) {
 
 #ifdef DEBUG_LOG
         KLog_U2("Mixing from ", pcmSource512 + posAt, " to ",
                 XGM2_PCM_RINGBUF_ADDR + ringWritePosPrev, ", stop at ",
                 XGM2_PCM_RINGBUF_ADDR + ringWritePos);
 #endif
-
-        XGM2_PCM_mixIntoRingBuffer_withOverflowProtection_ASM(
-            pcmSource512, XGM2_PCM_RINGBUF_ADDR, bufPos, ringWritePosPrev, ringWritePos);
+        XGM2_PCM_mixIntoRingBuffer_withOverflowProtection_ASM(pcmSource512, status);
     }
 
     exitBus();
-
-    // Update output variables
-    *ringbufPos = ringWritePos;
 }

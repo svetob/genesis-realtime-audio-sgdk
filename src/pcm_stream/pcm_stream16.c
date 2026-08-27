@@ -145,7 +145,8 @@ void PCM_STREAM16_update(PCMStream16 *stream)
         return;
     }
 
-    XGM2_PCM_mix_into_ringbuf(stream->buffer, &(stream->bufferPos), &(stream->ringbufPos));
+    // TODO 16bit stuff is dead code atm
+    // XGM2_PCM_mix_into_ringbuf(stream->buffer, &(stream->bufferPos), &(stream->ringbufPos));
 
     PCMStream16Status statusPrev = stream->status;
     bool isBuffer0 = stream->bufferPos < 256;

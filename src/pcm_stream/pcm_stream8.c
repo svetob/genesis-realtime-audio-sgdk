@@ -139,8 +139,7 @@ void PCM_STREAM_update(PCMStream8 *stream, bool render)
     KLog("Updating PCM Stream");
 #endif
 
-    XGM2_PCM_mix_into_ringbuf(stream->buffer, &(stream->mixer.bufferPos),
-                              &(stream->mixer.ringPosPrev));
+    XGM2_PCM_mix_into_ringbuf(stream->buffer, &(stream->mixer));
 
     if (render) {
         if (stream->mixer.bufferPos < stream->bufferPosPrev) {
