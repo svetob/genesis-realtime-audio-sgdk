@@ -2,6 +2,7 @@
 #include "resources.h"
 #include "pcmstream.h"
 #include "xgm2pcm.h"
+#include "../test/log.h"
 
 // #define DEBUG_LOG
 
@@ -31,7 +32,8 @@ static inline void renderSoundsToStream(void *buf, u16 len, PCMStream *stream)
     // If first PCM sound is playing
     if (((u32 *) stream->pcmsound_raw_playback)[1]) {
 #ifdef DEBUG_LOG
-        KLog_U2("Playing 8bit PCMs to ", (u32) buf);
+        KLog_U1("Playing 8bit PCMs to ", (u32) buf);
+        logNamedArrayU32H("playback", stream->pcmsound_raw_playback, 8, 4, 2);
 #endif
         PCMSTREAM_sound_raw_playback4_ASM(stream->pcmsound_raw_playback, buf, len);
     } else {
@@ -66,7 +68,7 @@ PCMStream *PCMSTREAM_create(SoundPCMChannel channel)
     memsetU32(buf, 0, PCMSTREAM_SIZE >> 2);
 
     void *soundBuf = MEM_alloc(PCMSTREAM_PLAYBACK_RAW_BUFSIZE);
-    memset(buf, 0, PCMSTREAM_PLAYBACK_RAW_BUFSIZE);
+    memset(soundBuf, 0, PCMSTREAM_PLAYBACK_RAW_BUFSIZE);
 
     PCMStream *stream = MEM_alloc(sizeof(PCMStream));
     stream->buffer = buf;
@@ -138,8 +140,8 @@ void PCMSTREAM_update(PCMStream *stream, bool render)
         if (stream->mixer.bufferPos < stream->bufferPosPrev) {
             u16 renderLen = PCMSTREAM_SIZE - stream->bufferPosPrev;
 #ifdef DEBUG_LOG
-            KLog_U4("Rendering to buf ", (u32) stream->buffer, ", bufferPos ", stream->bufferPos,
-                    ", bufferPosPrev ", stream->bufferPosPrev, ", renderLen ", renderLen);
+            KLog_U3("Rendering to buf ", (u32) stream->buffer, ", bufferPosPrev ",
+                    stream->bufferPosPrev, ", renderLen ", renderLen);
 #endif
             renderStreamBuffer(stream->buffer + stream->bufferPosPrev, renderLen, stream);
             stream->bufferPosPrev = 0;
@@ -148,8 +150,8 @@ void PCMSTREAM_update(PCMStream *stream, bool render)
         if (stream->mixer.bufferPos > stream->bufferPosPrev) {
             u16 renderLen = stream->mixer.bufferPos - stream->bufferPosPrev;
 #ifdef DEBUG_LOG
-            KLog_U4("Rendering to buf ", (u32) stream->buffer, ", bufferPos ", stream->bufferPos,
-                    ", bufferPosPrev ", stream->bufferPosPrev, ", renderLen ", renderLen);
+            KLog_U3("Rendering to buf ", (u32) stream->buffer, ", bufferPosPrev ",
+                    stream->bufferPosPrev, ", renderLen ", renderLen);
 #endif
             renderStreamBuffer(stream->buffer + stream->bufferPosPrev, renderLen, stream);
             stream->bufferPosPrev = stream->mixer.bufferPos;
@@ -157,6 +159,7 @@ void PCMSTREAM_update(PCMStream *stream, bool render)
     }
 }
 
+static u8 called = 0;
 void PCMSTREAM_playSound(u8 *pcm, u16 len, PCMStream *stream)
 {
     /**
@@ -166,43 +169,49 @@ void PCMSTREAM_playSound(u8 *pcm, u16 len, PCMStream *stream)
      * ASM to make assumptions and skip checks, saving cycles
      * during playback.
      */
-    s8 n = PCMSTREAM_PLAYBACK_RAW_MAX;
+    s8 i = 0;
     PCMSoundPlaybackRaw *data = stream->pcmsound_raw_playback;
 
+    logNamedArrayU32H("before", stream->pcmsound_raw_playback, 8, 4, 2);
+    logNamedU8("called", ++called, 0, 0, 2);
+
     // Find first slot that is free or has remaining playback length
-    while (n-- && data->remain >= len) {
+
+    while (i < PCMSTREAM_PLAYBACK_RAW_MAX && data->remain >= len) {
         data++;
+        i++;
     }
 
-    if (n >= 0) {
-        // Slot found, insert and shift rest upwards
-        // TODO: Increment playing counter?
+    if (i < PCMSTREAM_PLAYBACK_RAW_MAX) {
+        if (data->remain == 0) {
+            // Overwrite
+            data->pcm = pcm;
+            data->remain = len;
+        } else {
+            PCMSoundPlaybackRaw *dataInsert = data;
 
-        PCMSoundPlaybackRaw buf;
-        PCMSoundPlaybackRaw tmp;
+            // Find copy start and end pos
+            void *copyStartPtr = (void *) data;
+            while (i < PCMSTREAM_PLAYBACK_RAW_MAX && data->remain > 0) {
+                data++;
+                i++;
+            }
 
-        // Insert
+            // Shift trailing elements
+            u32 *copyTo = (u32 *) data;
+            u32 *copyFrom = (u32 *) ((void *) copyTo - sizeof(PCMSoundPlaybackRaw));
 
-        // TODO memcpy?
-        buf.pcm = data->pcm;
-        buf.remain = data->remain;
+            while (copyFrom != copyStartPtr) {
+                *--copyTo = *--copyFrom;
+            }
 
-        data->pcm = pcm;
-        data->remain = len;
-
-        while (n-- && buf.remain) {
-            data++;
-
-            tmp.pcm = data->pcm;
-            tmp.remain = data->remain;
-
-            data->pcm = buf.pcm;
-            data->remain = buf.remain;
-
-            buf.pcm = tmp.pcm;
-            buf.remain = tmp.remain;
+            // Insert element
+            dataInsert->pcm = pcm;
+            dataInsert->remain = len;
         }
     }
+
+    logNamedArrayU32H("insert", stream->pcmsound_raw_playback, 8, 4, 8);
 }
 
 void PCMSTREAM_setInstrumentCallback(PCMStreamInstrumentCallback *callback, void *callbackData,

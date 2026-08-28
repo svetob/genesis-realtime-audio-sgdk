@@ -73,6 +73,14 @@ void logNamedU8H(const char *name, u8 val, u16 x, u16 y)
     VDP_drawText(logbuf, x + strlen(name) + 2, y);
 }
 
+void logNamedU8(const char *name, u8 val, u16 x, u16 y, u16 minsize)
+{
+    VDP_drawText(name, x, y);
+    VDP_drawText(":", x + strlen(name), y);
+    intToStr(val, logbuf, minsize);
+    VDP_drawText(logbuf, x + strlen(name) + 2, y);
+}
+
 void logNamedPtr(const char *name, void *ptr, u16 x, u16 y)
 {
     VDP_drawText(name, x, y);
@@ -89,7 +97,7 @@ void logNamedPtrU16(const char *name, void *ptr, u16 x, u16 y)
     VDP_drawText(logbuf, x + strlen(name) + 1, y);
 }
 
-void logNamedArrayU8H(const char *name, u8 *arr, u16 n, u8 maxLine, u16 y)
+void logNamedArrayU8H(const char *name, u8 *arr, u16 n, u8 width, u16 y)
 {
     VDP_drawText("[", 1, y);
     VDP_drawText(name, 2, y);
@@ -99,7 +107,7 @@ void logNamedArrayU8H(const char *name, u8 *arr, u16 n, u8 maxLine, u16 y)
     u16 dy = y + 1;
     VDP_drawText("[", 1, dy);
     for (u16 i = 0; i < n; i++) {
-        if (dx >= 36 || dx >= (2 + maxLine * 3)) {
+        if (dx >= 36 || dx >= (2 + width * 3)) {
             dx = 2;
             dy++;
         }
@@ -112,7 +120,7 @@ void logNamedArrayU8H(const char *name, u8 *arr, u16 n, u8 maxLine, u16 y)
     VDP_drawText("]", dx - 1, dy);
 }
 
-void logNamedArrayU16H(const char *name, u16 *arr, u16 n, u8 maxLine, u16 y)
+void logNamedArrayU16H(const char *name, u16 *arr, u16 n, u8 width, u16 y)
 {
     VDP_drawText("[", 1, y);
     VDP_drawText(name, 2, y);
@@ -122,7 +130,7 @@ void logNamedArrayU16H(const char *name, u16 *arr, u16 n, u8 maxLine, u16 y)
     u16 dy = y + 1;
     VDP_drawText("[", 1, dy);
     for (u16 i = 0; i < n; i++) {
-        if (dx >= 36 || dx >= (2 + maxLine * 5)) {
+        if (dx >= 36 || dx >= (2 + width * 5)) {
             dx = 2;
             dy++;
         }
@@ -131,6 +139,29 @@ void logNamedArrayU16H(const char *name, u16 *arr, u16 n, u8 maxLine, u16 y)
         VDP_drawText(logbuf, dx, dy);
         VDP_drawText(",", dx + 4, dy);
         dx += 5;
+    }
+    VDP_drawText("]", dx - 1, dy);
+}
+
+void logNamedArrayU32H(const char *name, u32 *arr, u16 n, u8 width, u16 y)
+{
+    VDP_drawText("[", 1, y);
+    VDP_drawText(name, 2, y);
+    VDP_drawText("]:", 2 + strlen(name), y);
+
+    u16 dx = 2;
+    u16 dy = y + 1;
+    VDP_drawText("[", 1, dy);
+    for (u16 i = 0; i < n; i++) {
+        if (dx >= 36 || dx >= (2 + width * 9)) {
+            dx = 2;
+            dy++;
+        }
+
+        intToHex(arr[i], logbuf, 8);
+        VDP_drawText(logbuf, dx, dy);
+        VDP_drawText(",", dx + 8, dy);
+        dx += 9;
     }
     VDP_drawText("]", dx - 1, dy);
 }

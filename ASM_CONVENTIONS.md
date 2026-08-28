@@ -27,7 +27,7 @@ pcmstream_renderpcm_init:
         * 0x80               -> d4
         move.b  #0x80,d4
 
-pcmstream_renderpcm_loop:
+pcmstream_renderpcm_loop:P
 .L1:
         pcmstream_renderpcm_do16
 

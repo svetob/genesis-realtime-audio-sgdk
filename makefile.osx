@@ -1,4 +1,8 @@
 export GDK ?= /opt/toolchains/mars/m68k-elf
+
+# Disable GCC optimizations
+#EXTRA_FLAGS := -O0
+
 include $(GDK)/makefile.gen
 export GENESIS_DEV = ~/gamedev/genesis
 

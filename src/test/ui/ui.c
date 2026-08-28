@@ -176,8 +176,10 @@ static void handleInputHeld(u16 joy)
     }
 }
 
+static u8 called = 0;
 static void handleInput(u16 joy, u16 changed, u16 state)
 {
+    logNamedU8("calledinp", ++called, 20, 0, 2);
     if (changed & state & BUTTON_UP) {
         if (currentRow > 0) {
             currentRow -= 1;
@@ -325,8 +327,8 @@ void runUI()
         handleInputHeld(JOY_readJoypad(JOY_1));
 
         // UI render
-        drawTabs();
-        drawOptions();
+        // drawTabs();
+        // drawOptions();
 
         logNamedU16("SCANLINES", scanlines_avg, 1, 27, 3);
 
