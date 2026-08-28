@@ -13,13 +13,13 @@
 // PARAMS
 // ===========================
 
-bool param_filter_enabled = true;
+bool param_filter_enabled = false;
 FilterLPType param_filter_type = FILTER_LP_2POLE_RESONANT;
 u16 param_filter_freq = 4000;
 u16 param_filter_q = 40000;
 bool filter_params_updated = false;
 
-bool param_echo_enabled = true;
+bool param_echo_enabled = false;
 u16 param_echo_delay = 4096;
 u8 param_echo_feedback = 220;
 bool echo_params_updated = false;

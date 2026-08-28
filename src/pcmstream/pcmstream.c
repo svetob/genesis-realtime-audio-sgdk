@@ -166,12 +166,12 @@ void PCMSTREAM_playSound(u8 *pcm, u16 len, PCMStream *stream)
      * ASM to make assumptions and skip checks, saving cycles
      * during playback.
      */
-    u8 n = PCMSTREAM_PLAYBACK_RAW_MAX;
+    s8 n = PCMSTREAM_PLAYBACK_RAW_MAX;
     PCMSoundPlaybackRaw *data = stream->pcmsound_raw_playback;
 
     // Find first slot that is free or has remaining playback length
     while (n-- && data->remain >= len) {
-        data += sizeof(PCMSoundPlaybackRaw);
+        data++;
     }
 
     if (n >= 0) {
@@ -181,6 +181,8 @@ void PCMSTREAM_playSound(u8 *pcm, u16 len, PCMStream *stream)
         PCMSoundPlaybackRaw buf;
         PCMSoundPlaybackRaw tmp;
 
+        // Insert
+
         // TODO memcpy?
         buf.pcm = data->pcm;
         buf.remain = data->remain;
@@ -188,9 +190,9 @@ void PCMSTREAM_playSound(u8 *pcm, u16 len, PCMStream *stream)
         data->pcm = pcm;
         data->remain = len;
 
-        data += sizeof(PCMSoundPlaybackRaw);
+        while (n-- && buf.remain) {
+            data++;
 
-        while (n-- && data->remain) {
             tmp.pcm = data->pcm;
             tmp.remain = data->remain;
 
@@ -199,8 +201,6 @@ void PCMSTREAM_playSound(u8 *pcm, u16 len, PCMStream *stream)
 
             buf.pcm = tmp.pcm;
             buf.remain = tmp.remain;
-
-            data += sizeof(PCMSoundPlaybackRaw);
         }
     }
 }
