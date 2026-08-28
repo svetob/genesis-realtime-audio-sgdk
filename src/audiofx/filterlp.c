@@ -48,6 +48,13 @@
  * 2POLE filter is the recommended one. The 1POLE filter can be used if
  * you are tight on CPU resources.
  *
+ *
+ * Future implementation candidates:
+ *
+ * HP filter based on comments in above.
+ *
+ * Karlsen Fast Ladder also uses only 4 mults:
+ * https://www.musicdsp.org/en/latest/Filters/240-karlsen-fast-ladder.html
  */
 
 // #define DEBUG_LOG
@@ -145,12 +152,13 @@ void AFX_filter_lp_update(AFXFilterLP *filter, u32 cutoffFreq, s32 q)
      *
      * Although the filter works, this does not give the correct linear response curve.
      * The correct algoritm for computing f from freq and samplerate is in comment thread
-     * from 2006-09-12 by peter schoffhauzer:
+     * from 2006-09-12 by peter schoffhauzer and in
+     * https://www.musicdsp.org/en/latest/Filters/23-state-variable.html:
      *
      * f = 2.0*sin(pi*freq/samplerate);
      *
      * This should go into perhaps a 1024-byte LUT. The input cutoffFreq should then be in
-     * range [0-1023] representing a linear curve where 0 is 40hz and 1023 is samplerate/2.
+     * range [0-1023] representing a linear curve where 0 is ~40hz and 1023 is samplerate/2.
      * We could also allow toggling between exponential and linear response curve here with
      * two different LUTs.
      */

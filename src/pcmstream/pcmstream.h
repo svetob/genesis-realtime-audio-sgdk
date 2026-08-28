@@ -58,7 +58,19 @@ typedef void PCMStreamProcessingCallback(s8 *stream, u16 len, void *data);
 
 /**
  *  \brief
- *      Sound PCM Stream data struct
+ *      Data for raw (no amplitude or rate params) PCM sound playback.
+ */
+typedef struct {
+    void *pcm;
+    u32 remain;
+} PCMSoundPlaybackRaw;
+
+#define PCMSTREAM_PLAYBACK_RAW_MAX     4
+#define PCMSTREAM_PLAYBACK_RAW_BUFSIZE (sizeof(PCMSoundPlaybackRaw) * PCMSTREAM_PLAYBACK_RAW_MAX)
+
+/**
+ *  \brief
+ *      PCM Stream data struct
  */
 typedef struct {
     void *buffer;
@@ -72,9 +84,8 @@ typedef struct {
     PCMStreamProcessingCallback *afx_cb;
     void *afx_cb_data;
 
-    // PCM sound playback
-    void *pcm_sound;
-    u16 pcm_remain;
+    // PCM sound playback raw
+    void *pcmsound_raw_playback;
 
     // Instrument playback
     PCMStreamInstrumentCallback *inst_cb;

@@ -1,6 +1,6 @@
-* 4 samples from 1 PCM to dirty buffer
+* 4 samples from 1 PCM to dirty 8bit buffer
 .macro  pcmstream_renderpcm_1_to_dirty_do4
-        move.l  (a0)+,(a1)+
+        move.l  (a3)+,(a1)+
 .endm                                           * 7 cycles per sample
 
 .macro  pcmstream_renderpcm_1_to_dirty_do64
@@ -23,12 +23,36 @@
         pcmstream_renderpcm_1_to_dirty_do4
         pcmstream_renderpcm_1_to_dirty_do4
         pcmstream_renderpcm_1_to_dirty_do4
+
+        subi.l  #64,d3
 .endm                                           * 448 cycles per chunk
 
+* 4 samples from 1 PCM to dirty 8bit buffer
+.macro  pcmstream_renderpcm_2_to_dirty_do4
+        move.l  (a0)+,(a1)+
+.endm                                           * 7 cycles per sample
 
-.macro  pcmstream_renderpcm_2write_do1
-        move.l  (a0)+,(a1+)
-.endm
+.macro  pcmstream_renderpcm_2_to_dirty_do64
+        pcmstream_renderpcm_2_to_dirty_do4
+        pcmstream_renderpcm_2_to_dirty_do4
+        pcmstream_renderpcm_2_to_dirty_do4
+        pcmstream_renderpcm_2_to_dirty_do4
+
+        pcmstream_renderpcm_2_to_dirty_do4
+        pcmstream_renderpcm_2_to_dirty_do4
+        pcmstream_renderpcm_2_to_dirty_do4
+        pcmstream_renderpcm_2_to_dirty_do4
+
+        pcmstream_renderpcm_2_to_dirty_do4
+        pcmstream_renderpcm_2_to_dirty_do4
+        pcmstream_renderpcm_2_to_dirty_do4
+        pcmstream_renderpcm_2_to_dirty_do4
+
+        pcmstream_renderpcm_2_to_dirty_do4
+        pcmstream_renderpcm_2_to_dirty_do4
+        pcmstream_renderpcm_2_to_dirty_do4
+        pcmstream_renderpcm_2_to_dirty_do4
+.endm                                           * 448 cycles per chunk
 
 
 * 1 PCM to clean buffer
