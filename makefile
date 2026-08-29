@@ -1,5 +1,6 @@
 SGDK_PATH := D:\Gamedev\Genesis\SGDK
 MAME_PATH := D:\Gamedev\Genesis\Emulators\Mame
+BLASTEM_PATH := D:\Gamedev\Genesis\Emulators\blastem-win32-0.6.2
 
 OUT := out
 
@@ -19,11 +20,16 @@ asm-motorola: asm
 build-sgdk:
 	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makelib.gen
 
-run-mame: build
+run-blastem: build asm-motorola
+	$(BLASTEM_PATH)\blastem.exe $(OUT)\rom.bin
+
+run-mame: build asm-motorola
 	$(MAME_PATH)\mame.exe genesis -cart $(OUT)\rom.bin
 
-debug-mame: build
+debug-mame: build asm-motorola
 	$(MAME_PATH)\mame.exe genesis -cart $(OUT)\rom.bin -debug
+
+
 
 # Format and lint using clang-format
 SRC_FILES := $(wildcard src/*.c src/*.h src/*/*.c src/*/*.h src/*/*/*.c src/*/*/*.h)
