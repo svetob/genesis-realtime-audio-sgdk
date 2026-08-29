@@ -106,7 +106,7 @@ void resetStream()
     afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE, param_echo_delay);
 
     AFX_filter_lp_free(afx_filter_lp);
-    afx_filter_lp = AFX_filter_lp_create(param_filter_type, 2000, 45875);
+    afx_filter_lp = AFX_filter_lp_create(param_filter_type, param_filter_freq, param_filter_q);
 
     PCMSTREAM_start(pcm_stream);
 }
@@ -118,7 +118,8 @@ void playSoundSweep()
 
 void playSoundSnare()
 {
-    PCMSTREAM_playSound((u8 *) wav_snare_rim, sizeof(wav_snare_rim), pcm_stream);
+    // PCMSTREAM_playSound((u8 *) wav_snare_rim, sizeof(wav_snare_rim), pcm_stream);
+    PCMSTREAM_playSound((u8 *) wav_test_max, sizeof(wav_test_max), pcm_stream);
 }
 
 void toggleVGM()

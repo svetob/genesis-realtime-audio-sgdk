@@ -85,11 +85,11 @@ pcmstream_sound_raw_playback_init:
 pcmstream_sound_raw_playback_body:
 .L_PCMRAW_BODY:
         * If no sample playing, return  TODO: Fill with silence
-        tst     d3
+        tst.l   d3
         beq     .L_PCMRAW_RET
 
         * If 1 sample playing, play 1 sample
-        tst     d4
+        tst.l   d4
         beq     .L_PCMRAW_BODY_1
 
         * If 2 samples playing, play 2 samples
@@ -120,6 +120,16 @@ pcmstream_sound_raw_playback_return:
         move.l  a4,8(a0)
         * remain1            -> memory
         move.l  d4,12(a0)
+
+        * pcm2               -> memory
+        move.l  a5,16(a0)
+        * remain2            -> memory
+        move.l  d5,20(a0)
+
+        * pcm3               -> memory
+        move.l  a6,24(a0)
+        * remain3            -> memory
+        move.l  d6,28(a0)
 
         movem.l (sp)+,a2-a6/d2-d6
         rts

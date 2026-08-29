@@ -102,7 +102,7 @@ void PCMSTREAM_start(PCMStream *stream);
 void PCMSTREAM_isPlaying(PCMStream *stream);
 void PCMSTREAM_stop(PCMStream *stream);
 
-void PCMSTREAM_playSound(u8 *pcm, u16 len, PCMStream *stream);
+void PCMSTREAM_playSound(u8 *pcm, u32 len, PCMStream *stream);
 void PCMSTREAM_setInstrumentCallback(PCMStreamInstrumentCallback *callback, void *callbackData,
                                      PCMStream *stream);
 void PCMSTREAM_setProcessingCallback(PCMStreamProcessingCallback *callback, void *callbackData,

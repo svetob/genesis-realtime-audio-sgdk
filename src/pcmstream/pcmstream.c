@@ -33,9 +33,11 @@ static inline void renderSoundsToStream(void *buf, u16 len, PCMStream *stream)
     if (((u32 *) stream->pcmsound_raw_playback)[1]) {
 #ifdef DEBUG_LOG
         KLog_U1("Playing 8bit PCMs to ", (u32) buf);
-        logNamedArrayU32H("playback", stream->pcmsound_raw_playback, 8, 4, 2);
 #endif
         PCMSTREAM_sound_raw_playback4_ASM(stream->pcmsound_raw_playback, buf, len);
+#ifdef DEBUG_LOG
+        logNamedArrayU32H("playback", stream->pcmsound_raw_playback, 8, 4, 2);
+#endif
     } else {
         // Clear stream if no sounds were played
         PCMSTREAM_clear64_ASM((void *) buf, len);
@@ -64,13 +66,14 @@ static inline void renderStreamBuffer(u8 *buf, u16 len, PCMStream *stream)
 
 PCMStream *PCMSTREAM_create(SoundPCMChannel channel)
 {
+    PCMStream *stream = MEM_alloc(sizeof(PCMStream));
+
     void *buf = MEM_alloc(PCMSTREAM_SIZE);
     memsetU32(buf, 0, PCMSTREAM_SIZE >> 2);
 
     void *soundBuf = MEM_alloc(PCMSTREAM_PLAYBACK_RAW_BUFSIZE);
     memset(soundBuf, 0, PCMSTREAM_PLAYBACK_RAW_BUFSIZE);
 
-    PCMStream *stream = MEM_alloc(sizeof(PCMStream));
     stream->buffer = buf;
     stream->mixer.bufferPos = 0;
     stream->mixer.ringPosPrev = XGM2PCM_peek_ringbuf_writepos();
@@ -159,8 +162,8 @@ void PCMSTREAM_update(PCMStream *stream, bool render)
     }
 }
 
-static u8 called = 0;
-void PCMSTREAM_playSound(u8 *pcm, u16 len, PCMStream *stream)
+// static u8 called = 0;
+void PCMSTREAM_playSound(u8 *pcm, u32 len, PCMStream *stream)
 {
     /**
      * Inserts the new sound into the list of playing sounds,
@@ -172,8 +175,8 @@ void PCMSTREAM_playSound(u8 *pcm, u16 len, PCMStream *stream)
     s8 i = 0;
     PCMSoundPlaybackRaw *data = stream->pcmsound_raw_playback;
 
-    logNamedArrayU32H("before", stream->pcmsound_raw_playback, 8, 4, 2);
-    logNamedU8("called", ++called, 0, 0, 2);
+    // logNamedArrayU32H("before", stream->pcmsound_raw_playback, 8, 4, 2);
+    // logNamedU8("called", ++called, 0, 0, 2);
 
     // Find first slot that is free or has remaining playback length
 
@@ -210,7 +213,6 @@ void PCMSTREAM_playSound(u8 *pcm, u16 len, PCMStream *stream)
             dataInsert->remain = len;
         }
     }
-
     logNamedArrayU32H("insert", stream->pcmsound_raw_playback, 8, 4, 8);
 }
 

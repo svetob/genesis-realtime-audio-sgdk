@@ -176,25 +176,27 @@ static void handleInputHeld(u16 joy)
     }
 }
 
-static u8 called = 0;
-static void handleInput(u16 joy, u16 changed, u16 state)
+static u16 joyPrev = 0;
+static void handleInput(u16 joy)
 {
-    logNamedU8("calledinp", ++called, 20, 0, 2);
-    if (changed & state & BUTTON_UP) {
+    u16 changed = joy ^ joyPrev;
+    joyPrev = joy;
+
+    if (changed & joy & BUTTON_UP) {
         if (currentRow > 0) {
             currentRow -= 1;
         }
         redrawParams = true;
     }
 
-    if (changed & state & BUTTON_DOWN) {
+    if (changed & joy & BUTTON_DOWN) {
         if (currentRow < tabParamCnt[currentTab]) {
             currentRow += 1;
         }
         redrawParams = true;
     }
 
-    if (changed & state & BUTTON_LEFT) {
+    if (changed & joy & BUTTON_LEFT) {
         if (currentRow == 0) {
             if (currentTab > 0) {
                 currentTab--;
@@ -206,7 +208,7 @@ static void handleInput(u16 joy, u16 changed, u16 state)
         }
     }
 
-    if (changed & state & BUTTON_RIGHT) {
+    if (changed & joy & BUTTON_RIGHT) {
         if (currentRow == 0) {
             if (currentTab < UI_TABS - 1) {
                 currentTab++;
@@ -218,19 +220,19 @@ static void handleInput(u16 joy, u16 changed, u16 state)
         }
     }
 
-    if (changed & state & BUTTON_A) {
+    if (changed & joy & BUTTON_A) {
         playSoundSweep();
     }
 
-    if (changed & state & BUTTON_B) {
+    if (changed & joy & BUTTON_B) {
         playSoundSnare();
     }
 
-    if (changed & state & BUTTON_START) {
+    if (changed & joy & BUTTON_START) {
         toggleVGM();
     }
 
-    if (changed & state & BUTTON_MODE) {
+    if (changed & joy & BUTTON_MODE) {
         resetStream();
     }
 }
@@ -316,7 +318,7 @@ void runUI()
 
     VDP_drawText("PCM STREAM", 15, 1);
 
-    JOY_setEventHandler(handleInput);
+    JOY_setEventHandler(NULL);
     Z80_loadDriver(Z80_DRIVER_XGM2, true);
 
     startStream();
@@ -324,7 +326,9 @@ void runUI()
     while (true) {
         SYS_doVBlankProcess();
 
-        handleInputHeld(JOY_readJoypad(JOY_1));
+        u16 joy = JOY_readJoypad(JOY_1);
+        handleInput(joy);
+        handleInputHeld(joy);
 
         // UI render
         // drawTabs();
