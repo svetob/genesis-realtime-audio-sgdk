@@ -14,8 +14,8 @@
 // ===========================
 
 #define UI_DISPLAY
-// #define UI_DISPLAY_FRAME_COUNT
-// #define UI_DISPLAY_SCANLINES
+#define UI_DISPLAY_FRAME_COUNT
+#define UI_DISPLAY_SCANLINES
 
 // ===========================
 // CONST
@@ -340,8 +340,8 @@ void runUI()
 
 #ifdef UI_DISPLAY
         // UI render
-        // drawTabs();
-        // drawOptions();
+        drawTabs();
+        drawOptions();
 #endif
 
 #ifdef UI_DISPLAY_FRAME_COUNT
