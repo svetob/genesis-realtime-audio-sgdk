@@ -1,38 +1,42 @@
 export GDK ?= /opt/toolchains/mars/m68k-elf
-
-# Disable GCC optimizations
-#EXTRA_FLAGS := -O0
-
 include $(GDK)/makefile.gen
 export GENESIS_DEV = ~/gamedev/genesis
-
 OUT := out
 
-build: all
-
-# To debug generated ASM, run `make clean build asm-motorola`
-asm-motorola: asm
-	@python3 tools/lst2motorola.py $(OUT)
+# --- Build commands
+build: clean all
 
 build-sgdk:
 	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makelib.gen
 
-debug-mame: build
-	$(MAME_PATH)\mame.exe genesis -cart $(OUT)\rom.bin -debug
 
+# --- Disassembly tools
+asm-motorola: asm
+	@python3 tools/lst2motorola.py $(OUT)
+
+disasm: 
+	$(GDK)/bin/m68k-elf-objdump -d -S $(OUT)/rom.out > $(OUT)/rom.dis
+
+# --- Emulator: run
 run-blastem: all asm-motorola
 	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem out/rom.bin > /dev/null &
-
-debug-blastem: debug asm-motorola run-debug
-	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem -d out/rom.bin
 
 run-mame: all asm-motorola
 	$(GENESIS_DEV)/emulators/mame0289-arm64/mame genesis -cart $(OUT)/rom.bin
 
-debug-mame: all asm-motorola
-	$(GENESIS_DEV)/emulators/mame0289-arm64/mame genesis -cart $(OUT)/rom.bin -debug
+# --- Emulator: debug
+debug-blastem: debug asm-motorola run-debug
+	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem -d out/rom.bin
 
-# Format and lint using clang-format
+# Add your mame breakpoints here as symbols. TODO: Move to some file under debug/
+MAME_BP := XGM2PCM_SYS_disableInts_fast_noStack xgm2pcm_overwritebuffer_init xgm2pcm_overwritebuffer_ret VDP_waitVBlank.constprop.0
+gen-mame-debug-session:
+	@python3 tools/gen_mame_debug_session.py $(MAME_BP)
+
+debug-mame: build asm-motorola disasm gen-mame-debug-session
+	$(GENESIS_DEV)/emulators/mame0289-arm64/mame genesis -cart $(OUT)/rom.bin -debug -debugscript debug/mame-session
+
+# --- Format and lint using clang-format
 SRC_FILES := $(wildcard src/*.c src/*.h src/*/*.c src/*/*.h src/*/*/*.c src/*/*/*.h)
 
 format:

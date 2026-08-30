@@ -10,6 +10,14 @@
 #include <test/timer.h>
 
 // ===========================
+// CONFIGURE
+// ===========================
+
+#define UI_DISPLAY
+// #define UI_DISPLAY_FRAME_COUNT
+// #define UI_DISPLAY_SCANLINES
+
+// ===========================
 // CONST
 // ===========================
 
@@ -330,11 +338,18 @@ void runUI()
         handleInput(joy);
         handleInputHeld(joy);
 
+#ifdef UI_DISPLAY
         // UI render
         // drawTabs();
         // drawOptions();
+#endif
 
+#ifdef UI_DISPLAY_FRAME_COUNT
+        logNamedU16("FRAMES", frame_ctr, 1, 26, 3);
+#endif
+#ifdef UI_DISPLAY_SCANLINES
         logNamedU16("SCANLINES", scanlines_avg, 1, 27, 3);
+#endif
 
         // PCM Stream updates
         scanlineTimerWait();
@@ -342,12 +357,12 @@ void runUI()
         updateParams();
         updateStream(true);
 
-        while (GET_VCOUNTER < 70) {
+        while (GET_VCOUNTER < 70 || GET_VCOUNTER > VC_VBLANK) {
         }
 
         updateStream(false);
 
-        while (GET_VCOUNTER < 140) {
+        while (GET_VCOUNTER < 140 || GET_VCOUNTER > VC_VBLANK) {
         }
 
         updateStream(false);

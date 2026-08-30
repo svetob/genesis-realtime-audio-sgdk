@@ -213,7 +213,9 @@ void PCMSTREAM_playSound(u8 *pcm, u32 len, PCMStream *stream)
             dataInsert->remain = len;
         }
     }
+#ifdef DEBUG_LOG
     logNamedArrayU32H("insert", stream->pcmsound_raw_playback, 8, 4, 8);
+#endif
 }
 
 void PCMSTREAM_setInstrumentCallback(PCMStreamInstrumentCallback *callback, void *callbackData,

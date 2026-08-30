@@ -17,6 +17,9 @@ asm:
 asm-motorola: asm
 	@python3 tools/lst2motorola.py $(OUT)
 
+disasm: 
+	$(GDK)/bin/m68k-elf-objdump -d -S $(OUT)/rom.out > $(OUT)/rom.dis
+
 build-sgdk:
 	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makelib.gen
 

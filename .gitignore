@@ -5,3 +5,7 @@ out/*
 # MAME
 cfg/
 nvram/
+comments/
+
+# Debugging
+debug/
