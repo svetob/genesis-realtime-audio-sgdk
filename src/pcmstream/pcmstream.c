@@ -188,9 +188,11 @@ void PCMSTREAM_playSound(u8 *pcm, u32 len, PCMStream *stream)
     if (i < PCMSTREAM_PLAYBACK_RAW_MAX) {
         if (data->remain == 0) {
             // Overwrite
+            //KLog("Overwriting");
             data->pcm = pcm;
             data->remain = len;
         } else {
+            //KLog_U1("Inserting ", i);
             PCMSoundPlaybackRaw *dataInsert = data;
 
             // Find copy start and end pos

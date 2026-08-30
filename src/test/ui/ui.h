@@ -3,6 +3,7 @@
 
 #include <genesis.h>
 #include <audiofx/filterlp.h>
+#include <pcmstream/pcmstream.h>
 
 typedef enum {
     TAB_STREAM = 0,
@@ -14,6 +15,8 @@ typedef enum {
 } UITab;
 
 #define UI_TABS 6
+
+extern PCMStream *pcm_stream;
 
 extern bool param_filter_enabled;
 extern FilterLPType param_filter_type;

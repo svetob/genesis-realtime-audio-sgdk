@@ -31,7 +31,7 @@ bool echo_params_updated = false;
 #define PCM_PLAYBACK_RATE 13300
 #define ECHO_BUFFER_SIZE  4096
 
-static PCMStream *pcm_stream = NULL;
+PCMStream *pcm_stream = NULL;
 static AFXEcho *afx_echo = NULL;
 static AFXFilterLP *afx_filter_lp = NULL;
 

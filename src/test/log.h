@@ -9,6 +9,7 @@ void logU32(u32 val, u16 x, u16 y, u16 minsize);
 void logU8H(u8 val, u16 x, u16 y);
 void logU16H(u16 val, u16 x, u16 y);
 void logS16H(s16 val, u16 x, u16 y);
+void logU32H(u32 val, u16 x, u16 y);
 
 void logNamedU8(const char *name, u8 val, u16 x, u16 y, u16 minsize);
 void logNamedU8H(const char *name, u8 val, u16 x, u16 y);

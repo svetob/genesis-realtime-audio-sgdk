@@ -373,5 +373,16 @@ void runUI()
 
         // Performance measurements
         scanlineTimerNextFrame();
+
+        // Log PCM stuff
+        u32 * pcms = (u32 *) pcm_stream->pcmsound_raw_playback;
+        logNamedU32H("PCM0", pcms[0], 0, 0);
+        logU32H(pcms[1], 18, 0);
+        logNamedU32H("PCM1", pcms[2], 0, 1);
+        logU32H(pcms[3], 18, 1);
+        logNamedU32H("PCM2", pcms[4], 0, 2);
+        logU32H(pcms[5], 18, 2);
+        logNamedU32H("PCM3", pcms[6], 0, 3);
+        logU32H(pcms[7], 18, 3);
     }
 }
