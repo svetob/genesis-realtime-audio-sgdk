@@ -25,7 +25,7 @@ run-mame: all asm-motorola
 	$(GENESIS_DEV)/emulators/mame0289-arm64/mame genesis -cart $(OUT)/rom.bin
 
 # --- Emulator: debug
-debug-blastem: debug asm-motorola run-debug
+debug-blastem: build asm-motorola disasm
 	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem -d out/rom.bin
 
 # Add your mame breakpoints here as symbols. TODO: Move to some file under debug/

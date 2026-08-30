@@ -4,33 +4,45 @@ BLASTEM_PATH := D:\Gamedev\Genesis\Emulators\blastem-win32-0.6.2
 
 OUT := out
 
+# --- Build commands
 clean:
 	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makefile.gen clean
 
 build: clean
 	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makefile.gen
 
+build-sgdk:
+	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makelib.gen
+
+# --- Disassembly tools
 asm:
 	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makefile.gen asm
 
-# To debug generated ASM, run `make clean build asm-motorola`
 asm-motorola: asm
 	@python3 tools/lst2motorola.py $(OUT)
 
 disasm: 
-	$(GDK)/bin/m68k-elf-objdump -d -S $(OUT)/rom.out > $(OUT)/rom.dis
+	$(SGDK_PATH)\bin\objdump.exe -d -S $(OUT)/rom.out > $(OUT)/rom.dis
 
-build-sgdk:
-	$(SGDK_PATH)\bin\make.exe -f $(SGDK_PATH)\makelib.gen
-
+# --- Emulator: run
 run-blastem: build asm-motorola
 	$(BLASTEM_PATH)\blastem.exe $(OUT)\rom.bin
 
 run-mame: build asm-motorola
 	$(MAME_PATH)\mame.exe genesis -cart $(OUT)\rom.bin
 
-debug-mame: build asm-motorola
-	$(MAME_PATH)\mame.exe genesis -cart $(OUT)\rom.bin -debug
+# --- Emulator: debug
+debug-blastem: build asm-motorola
+	$(BLASTEM_PATH)\blastem.exe $(OUT)\rom.bin
+
+# Add your mame breakpoints here as symbols. TODO: Move to some file under debug/
+MAME_BP := pcmstream_sound_raw_playback_body_2pcm
+gen-mame-debug-session:
+	@python3 tools/gen_mame_debug_session.py $(MAME_BP)
+
+
+debug-mame: build asm-motorola disasm gen-mame-debug-session
+	$(MAME_PATH)\mame.exe genesis -cart $(OUT)\rom.bin -debug -debugscript debug/mame-session
 
 
 
