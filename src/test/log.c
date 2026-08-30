@@ -21,6 +21,12 @@ void logU32(u32 val, u16 x, u16 y, u16 minsize)
     VDP_drawText(logbuf, x, y);
 }
 
+void logU32H(u32 val, u16 x, u16 y)
+{
+    intToHex(val, logbuf, 8);
+    VDP_drawText(logbuf, x, y);
+}
+
 void logS16H(s16 val, u16 x, u16 y)
 {
     intToHex(val, logbuf, 4);

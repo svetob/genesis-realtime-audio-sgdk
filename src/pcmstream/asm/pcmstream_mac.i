@@ -25,6 +25,7 @@
         pcmstream_render1pcm_do4
 .endm                                           * 448 cycles per chunk
 
+
 * 1 samples from 2 PCM to 8bit buffer
 .macro  pcmstream_render2pcm_do1
         moveq   #0,d1
@@ -33,6 +34,7 @@
         move.b  (a4)+,d0
         add.w   d0,d1
 
+        ext.w   d1
         move.b  (a2,d1.w),(a1)+
 .endm                                           * 46 cycles per sample
 
@@ -58,4 +60,87 @@
         pcmstream_render2pcm_do8
         pcmstream_render2pcm_do8
         pcmstream_render2pcm_do8
+.endm                                           * 448 cycles per chunk
+
+
+* 1 sample from 3 PCM to 8bit buffer
+.macro  pcmstream_render3pcm_do1
+        moveq   #0,d1
+        move.b  (a3)+,d1
+
+        move.b  (a4)+,d0
+        add.w   d0,d1
+
+        move.b  (a5)+,d0
+        add.w   d0,d1
+
+        ext.w   d1
+        move.b  (a2,d1.w),(a1)+
+.endm                                           * 46 cycles per sample
+
+.macro  pcmstream_render3pcm_do8
+        pcmstream_render3pcm_do1
+        pcmstream_render3pcm_do1
+        pcmstream_render3pcm_do1
+        pcmstream_render3pcm_do1
+
+        pcmstream_render3pcm_do1
+        pcmstream_render3pcm_do1
+        pcmstream_render3pcm_do1
+        pcmstream_render3pcm_do1
+.endm
+
+.macro  pcmstream_render3pcm_do64
+        pcmstream_render3pcm_do8
+        pcmstream_render3pcm_do8
+        pcmstream_render3pcm_do8
+        pcmstream_render3pcm_do8
+
+        pcmstream_render3pcm_do8
+        pcmstream_render3pcm_do8
+        pcmstream_render3pcm_do8
+        pcmstream_render3pcm_do8
+.endm                                           * 448 cycles per chunk
+
+
+* 1 sample from 4 PCM to 8bit buffer
+.macro  pcmstream_render4pcm_do1
+        moveq   #0,d1
+        move.b  (a3)+,d1
+
+        move.b  (a4)+,d0
+        add.w   d0,d1
+
+        move.b  (a5)+,d0
+        add.w   d0,d1
+
+        move.b  (a6)+,d0
+        add.w   d0,d1
+
+        ext.w   d1
+        move.b  (a2,d1.w),(a1)+
+.endm                                           * 46 cycles per sample
+
+.macro  pcmstream_render4pcm_do8
+        pcmstream_render4pcm_do1
+        pcmstream_render4pcm_do1
+        pcmstream_render4pcm_do1
+        pcmstream_render4pcm_do1
+
+        pcmstream_render4pcm_do1
+        pcmstream_render4pcm_do1
+        pcmstream_render4pcm_do1
+        pcmstream_render4pcm_do1
+.endm
+
+.macro  pcmstream_render4pcm_do64
+        pcmstream_render4pcm_do8
+        pcmstream_render4pcm_do8
+        pcmstream_render4pcm_do8
+        pcmstream_render4pcm_do8
+
+        pcmstream_render4pcm_do8
+        pcmstream_render4pcm_do8
+        pcmstream_render4pcm_do8
+        pcmstream_render4pcm_do8
 .endm                                           * 448 cycles per chunk

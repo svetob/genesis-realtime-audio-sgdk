@@ -1,3 +1,5 @@
+#include <genesis.h>
+
 #ifndef _RES_PCM_STREAM_H_
 #define _RES_PCM_STREAM_H_
 
