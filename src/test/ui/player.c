@@ -118,7 +118,11 @@ void playSoundSweep()
 
 void playSoundSnare()
 {
-    // PCMSTREAM_playSound((u8 *) wav_snare_rim, sizeof(wav_snare_rim), pcm_stream);
+    PCMSTREAM_playSound((u8 *) wav_snare_rim, sizeof(wav_snare_rim), pcm_stream);
+}
+
+void playTestSoundMax()
+{
     PCMSTREAM_playSound((u8 *) wav_test_max, sizeof(wav_test_max), pcm_stream);
 }
 

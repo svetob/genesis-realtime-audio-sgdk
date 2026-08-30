@@ -236,6 +236,10 @@ static void handleInput(u16 joy)
         playSoundSnare();
     }
 
+    if (changed & joy & BUTTON_C) {
+        playTestSoundMax();
+    }
+
     if (changed & joy & BUTTON_START) {
         toggleVGM();
     }
