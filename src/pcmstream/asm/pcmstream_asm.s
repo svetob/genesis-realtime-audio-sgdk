@@ -93,6 +93,31 @@ pcmstream_sound_raw_playback_body:
         beq     .L_PCMRAW_BODY_1
 
         * If 2 samples playing, play 2 samples
+        tst.l   d5
+        beq     .L_PCMRAW_BODY_2
+
+        * If 3 samples playing, play 3 samples
+        tst.l   d6
+        beq     .L_PCMRAW_BODY_3
+
+        * Otherwise, play 4 samples
+
+pcmstream_sound_raw_playback_body_4pcm:
+.L_PCMRAW_BODY_4:
+        pcmstream_render4pcm_do64
+        subi.l  #64,d3
+        subi.l  #64,d4
+        subi.l  #64,d5
+        subi.l  #64,d6
+        bra     .L_PCMRAW_LOOP
+
+pcmstream_sound_raw_playback_body_3pcm:
+.L_PCMRAW_BODY_3:
+        pcmstream_render3pcm_do64
+        subi.l  #64,d3
+        subi.l  #64,d4
+        subi.l  #64,d5
+        bra     .L_PCMRAW_LOOP
 
 pcmstream_sound_raw_playback_body_2pcm:
 .L_PCMRAW_BODY_2:
