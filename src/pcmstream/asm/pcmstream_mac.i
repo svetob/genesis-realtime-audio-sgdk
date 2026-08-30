@@ -33,6 +33,7 @@
         move.b  (a4)+,d0
         add.w   d0,d1
 
+        ext.w   d1
         move.b  (a2,d1.w),(a1)+
 .endm                                           * 46 cycles per sample
 

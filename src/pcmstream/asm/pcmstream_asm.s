@@ -94,12 +94,14 @@ pcmstream_sound_raw_playback_body:
 
         * If 2 samples playing, play 2 samples
 
+pcmstream_sound_raw_playback_body_2pcm:
 .L_PCMRAW_BODY_2:
         pcmstream_render2pcm_do64
         subi.l  #64,d3
         subi.l  #64,d4
         bra     .L_PCMRAW_LOOP
 
+pcmstream_sound_raw_playback_body_1pcm:
 .L_PCMRAW_BODY_1:
         pcmstream_render1pcm_do64
         subi.l  #64,d3
