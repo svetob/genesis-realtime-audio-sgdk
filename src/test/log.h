@@ -20,7 +20,8 @@ void logNamedU32H(const char *name, u32 val, u16 x, u16 y);
 void logNamedPtr(const char *name, void *ptr, u16 x, u16 y);
 void logNamedPtrU16(const char *name, void *ptr, u16 x, u16 y);
 
-void logNamedArrayU8H(const char *name, u8 *arr, u16 n, u8 maxLine, u16 y);
-void logNamedArrayU16H(const char *name, u16 *arr, u16 n, u8 maxLine, u16 y);
+void logNamedArrayU8H(const char *name, u8 *arr, u16 n, u8 width, u16 y);
+void logNamedArrayU16H(const char *name, u16 *arr, u16 n, u8 width, u16 y);
+void logNamedArrayU32H(const char *name, u32 *arr, u16 n, u8 width, u16 y);
 
 #endif

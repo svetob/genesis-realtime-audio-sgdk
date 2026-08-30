@@ -10,6 +10,14 @@
 #include <test/timer.h>
 
 // ===========================
+// CONFIGURE
+// ===========================
+
+#define UI_DISPLAY
+#define UI_DISPLAY_FRAME_COUNT
+#define UI_DISPLAY_SCANLINES
+
+// ===========================
 // CONST
 // ===========================
 
@@ -176,23 +184,27 @@ static void handleInputHeld(u16 joy)
     }
 }
 
-static void handleInput(u16 joy, u16 changed, u16 state)
+static u16 joyPrev = 0;
+static void handleInput(u16 joy)
 {
-    if (changed & state & BUTTON_UP) {
+    u16 changed = joy ^ joyPrev;
+    joyPrev = joy;
+
+    if (changed & joy & BUTTON_UP) {
         if (currentRow > 0) {
             currentRow -= 1;
         }
         redrawParams = true;
     }
 
-    if (changed & state & BUTTON_DOWN) {
+    if (changed & joy & BUTTON_DOWN) {
         if (currentRow < tabParamCnt[currentTab]) {
             currentRow += 1;
         }
         redrawParams = true;
     }
 
-    if (changed & state & BUTTON_LEFT) {
+    if (changed & joy & BUTTON_LEFT) {
         if (currentRow == 0) {
             if (currentTab > 0) {
                 currentTab--;
@@ -204,7 +216,7 @@ static void handleInput(u16 joy, u16 changed, u16 state)
         }
     }
 
-    if (changed & state & BUTTON_RIGHT) {
+    if (changed & joy & BUTTON_RIGHT) {
         if (currentRow == 0) {
             if (currentTab < UI_TABS - 1) {
                 currentTab++;
@@ -216,19 +228,23 @@ static void handleInput(u16 joy, u16 changed, u16 state)
         }
     }
 
-    if (changed & state & BUTTON_A) {
+    if (changed & joy & BUTTON_A) {
         playSoundSweep();
     }
 
-    if (changed & state & BUTTON_B) {
+    if (changed & joy & BUTTON_B) {
         playSoundSnare();
     }
 
-    if (changed & state & BUTTON_START) {
+    if (changed & joy & BUTTON_C) {
+        playTestSoundMax();
+    }
+
+    if (changed & joy & BUTTON_START) {
         toggleVGM();
     }
 
-    if (changed & state & BUTTON_MODE) {
+    if (changed & joy & BUTTON_MODE) {
         resetStream();
     }
 }
@@ -314,7 +330,7 @@ void runUI()
 
     VDP_drawText("PCM STREAM", 15, 1);
 
-    JOY_setEventHandler(handleInput);
+    JOY_setEventHandler(NULL);
     Z80_loadDriver(Z80_DRIVER_XGM2, true);
 
     startStream();
@@ -322,13 +338,22 @@ void runUI()
     while (true) {
         SYS_doVBlankProcess();
 
-        handleInputHeld(JOY_readJoypad(JOY_1));
+        u16 joy = JOY_readJoypad(JOY_1);
+        handleInput(joy);
+        handleInputHeld(joy);
 
+#ifdef UI_DISPLAY
         // UI render
         drawTabs();
         drawOptions();
+#endif
 
+#ifdef UI_DISPLAY_FRAME_COUNT
+        logNamedU16("FRAMES", frame_ctr, 1, 26, 3);
+#endif
+#ifdef UI_DISPLAY_SCANLINES
         logNamedU16("SCANLINES", scanlines_avg, 1, 27, 3);
+#endif
 
         // PCM Stream updates
         scanlineTimerWait();
@@ -336,12 +361,12 @@ void runUI()
         updateParams();
         updateStream(true);
 
-        while (GET_VCOUNTER < 70) {
+        while (GET_VCOUNTER < 70 || GET_VCOUNTER > VC_VBLANK) {
         }
 
         updateStream(false);
 
-        while (GET_VCOUNTER < 140) {
+        while (GET_VCOUNTER < 140 || GET_VCOUNTER > VC_VBLANK) {
         }
 
         updateStream(false);

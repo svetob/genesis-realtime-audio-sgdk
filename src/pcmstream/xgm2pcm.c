@@ -1,5 +1,6 @@
 #include <genesis.h>
 #include "xgm2pcm.h"
+#include <test/log.h>
 
 // Uncomment to enable GensKmod debug logging
 // #define DEBUG_LOG
@@ -107,6 +108,11 @@ void XGM2PCM_activate()
 
 void XGM2PCM_mix_into_ringbuf(void *pcmSource512, XGM2PCMMixerStatus *mixerStatus)
 {
+#ifdef DEBUG_LOG
+    KLog_U4("XGM2PCM_mix - buffer ", (u32) pcmSource512, ", bufferPos ", mixerStatus->bufferPos,
+            ", ringPosPrev ", mixerStatus->ringPosPrev, ", VC ", GET_VCOUNTER);
+#endif
+
     enterBus();
 
     *XGM2_DAC_ENABLE = 0x80;
@@ -123,11 +129,6 @@ void XGM2PCM_mix_into_ringbuf(void *pcmSource512, XGM2PCMMixerStatus *mixerStatu
     vu8 ringWritePos = *XGM2PCM_RINGBUF_WRITEPOS_VAR;
     if (ringWritePos != mixerStatus->ringPosPrev) {
 
-#ifdef DEBUG_LOG
-        KLog_U2("Mixing from ", pcmSource512 + posAt, " to ",
-                XGM2PCM_RINGBUF_ADDR + ringWritePosPrev, ", stop at ",
-                XGM2PCM_RINGBUF_ADDR + ringWritePos);
-#endif
         if (shouldProtect) {
             // PCM ring buffer may have samples - mix into it with overflow protection
             XGM2PCM_mixIntoRingBuffer_withOverflowProtection_ASM(pcmSource512, mixerStatus);
@@ -140,4 +141,15 @@ void XGM2PCM_mix_into_ringbuf(void *pcmSource512, XGM2PCMMixerStatus *mixerStatu
     mixerStatus->pcmWasPlaying = pcmPlaying;
 
     exitBus();
+
+#ifdef DEBUG_LOG
+    if (ringWritePos & 0x3F != 0) {
+        logNamedU8H("INVALID RING WRITE POS", ringWritePos, 0, 0);
+    }
+#endif
+
+#ifdef DEBUG_LOG
+    KLog_U4("XGM2PCM_mix return - new bufferPos ", mixerStatus->bufferPos, ", new ringPosPrev ",
+            mixerStatus->ringPosPrev, ", ringWritePos ", ringWritePos, ", VC ", GET_VCOUNTER);
+#endif
 }

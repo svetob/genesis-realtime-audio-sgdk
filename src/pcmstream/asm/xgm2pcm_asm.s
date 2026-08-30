@@ -145,22 +145,28 @@ xgm2pcm_overwritebuffer_do64:
         xgm2pcm_mixbuf_do64
 
 xgm2pcm_overwritebuffer_loop:
-        addi.w  #0x40,d3                        // Increment and wrap pcmPos
+        * Increment and wrap pcmPos
+        addi.w  #0x40,d3
         andi.w  #0x01FF,d3
 
-        subq.b  #1,d6                           // Exit loop after max iterations
+        * Increment and wrap ringPosWrite
+        addi.b  #0x40,d4
+
+        * Exit loop after max iterations
+        subq.b  #1,d6
         beq     .L22
 
-        addi.b  #0x40,d4                        // Increment and wrap ringPosWrite
-
-        cmp     d4,d5                           // Exit loop when ringPosStop reached
+        * Exit loop when ringPosStop reached
+        cmp     d4,d5
         bne     .L21
 
 
 xgm2pcm_overwritebuffer_ret:
 .L22:
-        move.w  d3,(a3)                         // Write back pcmPos into memory
-        move.b  d4,2(a3)                        // Write back ringPosPrev into memory
+        * Write back pcmPos into memory pcmPos
+        move.w  d3,(a3)
+        * Write back ringPosWrite into memory ringPosPrev
+        move.b  d4,2(a3)
 
         movem.l (sp)+,a2-a3/d2-d6
         rts

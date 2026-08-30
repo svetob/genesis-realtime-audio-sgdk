@@ -1,7 +1,7 @@
 {
   "configurations": [
     {
-      "name": "sgdk",
+      "name": "Win32",
       "includePath": [
         "${workspaceFolder}\\..\\..\\SGDK\\inc",
         "${workspaceFolder}\\..\\..\\SGDK\\res",

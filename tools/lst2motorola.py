@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 
-def main() -> int:
+def main():
     scan_dir = Path(sys.argv[1])
 
     for lst in sorted(scan_dir.rglob("*.lst")):
@@ -22,4 +22,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

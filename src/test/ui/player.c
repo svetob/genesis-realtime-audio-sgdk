@@ -13,13 +13,13 @@
 // PARAMS
 // ===========================
 
-bool param_filter_enabled = true;
+bool param_filter_enabled = false;
 FilterLPType param_filter_type = FILTER_LP_2POLE_RESONANT;
 u16 param_filter_freq = 4000;
 u16 param_filter_q = 40000;
 bool filter_params_updated = false;
 
-bool param_echo_enabled = true;
+bool param_echo_enabled = false;
 u16 param_echo_delay = 4096;
 u8 param_echo_feedback = 220;
 bool echo_params_updated = false;
@@ -106,7 +106,7 @@ void resetStream()
     afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE, param_echo_delay);
 
     AFX_filter_lp_free(afx_filter_lp);
-    afx_filter_lp = AFX_filter_lp_create(param_filter_type, 2000, 45875);
+    afx_filter_lp = AFX_filter_lp_create(param_filter_type, param_filter_freq, param_filter_q);
 
     PCMSTREAM_start(pcm_stream);
 }
@@ -119,6 +119,11 @@ void playSoundSweep()
 void playSoundSnare()
 {
     PCMSTREAM_playSound((u8 *) wav_snare_rim, sizeof(wav_snare_rim), pcm_stream);
+}
+
+void playTestSoundMax()
+{
+    PCMSTREAM_playSound((u8 *) wav_test_max, sizeof(wav_test_max), pcm_stream);
 }
 
 void toggleVGM()

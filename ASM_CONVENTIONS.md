@@ -27,7 +27,7 @@ pcmstream_renderpcm_init:
         * 0x80               -> d4
         move.b  #0x80,d4
 
-pcmstream_renderpcm_loop:
+pcmstream_renderpcm_loop:P
 .L1:
         pcmstream_renderpcm_do16
 
@@ -139,29 +139,29 @@ contain the amount of unrolled loops, or items processed, etc.
 
 ```
 * 4 samples from 1 PCM to dirty buffer
-.macro  pcmstream_renderpcm_1_to_dirty_do4
+.macro  pcmstream_render1pcm_do4
         move.l  (a0)+,(a1)+
 .endm                                           * 7 cycles per sample
 
-.macro  pcmstream_renderpcm_1_to_dirty_do64
-        pcmstream_renderpcm_1_to_dirty_do4
-        pcmstream_renderpcm_1_to_dirty_do4
-        pcmstream_renderpcm_1_to_dirty_do4
-        pcmstream_renderpcm_1_to_dirty_do4
+.macro  pcmstream_render1pcm_do64
+        pcmstream_render1pcm_do4
+        pcmstream_render1pcm_do4
+        pcmstream_render1pcm_do4
+        pcmstream_render1pcm_do4
 
-        pcmstream_renderpcm_1_to_dirty_do4
-        pcmstream_renderpcm_1_to_dirty_do4
-        pcmstream_renderpcm_1_to_dirty_do4
-        pcmstream_renderpcm_1_to_dirty_do4
+        pcmstream_render1pcm_do4
+        pcmstream_render1pcm_do4
+        pcmstream_render1pcm_do4
+        pcmstream_render1pcm_do4
 
-        pcmstream_renderpcm_1_to_dirty_do4
-        pcmstream_renderpcm_1_to_dirty_do4
-        pcmstream_renderpcm_1_to_dirty_do4
-        pcmstream_renderpcm_1_to_dirty_do4
+        pcmstream_render1pcm_do4
+        pcmstream_render1pcm_do4
+        pcmstream_render1pcm_do4
+        pcmstream_render1pcm_do4
 
-        pcmstream_renderpcm_1_to_dirty_do4
-        pcmstream_renderpcm_1_to_dirty_do4
-        pcmstream_renderpcm_1_to_dirty_do4
-        pcmstream_renderpcm_1_to_dirty_do4
+        pcmstream_render1pcm_do4
+        pcmstream_render1pcm_do4
+        pcmstream_render1pcm_do4
+        pcmstream_render1pcm_do4
 .endm                                           * 448 cycles per chunk
 ```

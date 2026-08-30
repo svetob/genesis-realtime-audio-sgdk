@@ -3,6 +3,8 @@
 
 #include <genesis.h>
 
+#define VC_VBLANK 0xE5
+
 extern u16 scanlines_avg;
 extern u16 frame_ctr;
 

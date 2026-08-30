@@ -29,6 +29,7 @@ extern bool echo_params_updated;
 void toggleVGM();
 void playSoundSnare();
 void playSoundSweep();
+void playTestSoundMax();
 void resetStream();
 void updateParams();
 void updateStream(bool renderNext);
