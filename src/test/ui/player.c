@@ -2,6 +2,7 @@
 #include "resources.h"
 #include "ui.h"
 
+#include <audiofx/drive.h>
 #include <audiofx/echo.h>
 #include <audiofx/filterlp.h>
 #include <pcmstream/pcmstream.h>
@@ -34,17 +35,19 @@ bool echo_params_updated = false;
 PCMStream *pcm_stream = NULL;
 static AFXEcho *afx_echo = NULL;
 static AFXFilterLP *afx_filter_lp = NULL;
+static AFXDrive *afx_drive = NULL;
 
 static bool vgm_is_playing = false;
 
 static void streamProcessingCallback(s8 *stream, u16 len, void *data)
 {
     if (param_filter_enabled) {
-        AFX_filter_lp_process((s8 *) stream, len, afx_filter_lp);
+        AFX_filter_lp_process(stream, len, afx_filter_lp);
     }
     if (param_echo_enabled) {
-        AFX_echo_process((s8 *) stream, len, afx_echo);
+        AFX_echo_process(stream, len, afx_echo);
     }
+    AFX_drive_process(stream, len, afx_drive);
 }
 
 // ===========================
@@ -68,6 +71,10 @@ void startStream()
     if (afx_filter_lp == NULL) {
         afx_filter_lp =
             AFX_filter_lp_create(FILTER_LP_2POLE_RESONANT, param_filter_freq, param_filter_q);
+    }
+
+    if (afx_drive == NULL) {
+        afx_drive = AFX_drive_create(DRIVE_DIGITAL_CLIP, 4);
     }
 
     PCMSTREAM_start(pcm_stream);
