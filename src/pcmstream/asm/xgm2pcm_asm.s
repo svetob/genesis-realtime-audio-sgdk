@@ -108,7 +108,7 @@ xgm2pcm_mixbuffer_clip_ret:
 * )
 
 func    XGM2PCM_overwriteRingBuffer_ASM
-        movem.l a2-a3/d2-d6,-(sp)
+        movem.l a2/d2-d6,-(sp)
 
 xgm2pcm_overwritebuffer_init:
         moveq.l #0,d3
@@ -119,15 +119,19 @@ xgm2pcm_overwritebuffer_init:
 
         * ringBuf        -> a1
 
-        * mixerStatusPtr -> a3
-        move.l  36(sp),a3
+        * mixerStatusPtr -> a2
+        move.l  32(sp),a2
 
         * pcmSample      -> d0
         moveq.l #0,d0
+        * sampleStoUoffs -> d1
+        move.l  #0x80808080,d1
+        * chunkSize      -> d2
+        move.l  #64,d2
         * pcmPos         -> d3
-        move.w  (a3),d3
+        move.w  (a2),d3
         * ringPosWrite   -> d4
-        move.b  2(a3),d4
+        move.b  2(a2),d4
         * ringPosStop    -> d5
         movea.l #0x00A001F8,a0
         move.b  (a0),d5
@@ -136,13 +140,13 @@ xgm2pcm_overwritebuffer_init:
 
 xgm2pcm_overwritebuffer_do64:
 .L21:
-        movea.l 32(sp),a0
+        movea.l 28(sp),a0
         adda.l  d3,a0
         * TODO Read from some existing const
         movea.l #0x00a01900,a1
         adda.l  d4,a1
 
-        xgm2pcm_mixbuf_do64
+        xgm2pcm_writebuf_movep_do64
 
 xgm2pcm_overwritebuffer_loop:
         * Increment and wrap pcmPos
@@ -152,11 +156,11 @@ xgm2pcm_overwritebuffer_loop:
         * Increment and wrap ringPosWrite
         addi.b  #0x40,d4
 
-        * Exit loop after max iterations
+        * Exit loop after max iterations - sanity check to prevent infinite loop
         subq.b  #1,d6
         beq     .L22
 
-        * Exit loop when ringPosStop reached
+        * Continue loop until ringPosStop reached
         cmp     d4,d5
         bne     .L21
 
@@ -164,9 +168,9 @@ xgm2pcm_overwritebuffer_loop:
 xgm2pcm_overwritebuffer_ret:
 .L22:
         * Write back pcmPos into memory pcmPos
-        move.w  d3,(a3)
+        move.w  d3,(a2)
         * Write back ringPosWrite into memory ringPosPrev
-        move.b  d4,2(a3)
+        move.b  d4,2(a2)
 
-        movem.l (sp)+,a2-a3/d2-d6
+        movem.l (sp)+,a2/d2-d6
         rts

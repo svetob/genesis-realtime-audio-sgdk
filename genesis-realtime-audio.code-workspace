@@ -31,5 +31,6 @@
       "files.insertFinalNewline": true,
       "files.trimFinalNewlines": true,
     },
+    "git.ignoreLimitWarning": true,
   },
 }

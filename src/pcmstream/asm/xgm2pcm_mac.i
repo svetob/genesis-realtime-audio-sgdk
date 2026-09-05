@@ -1,17 +1,65 @@
-* TODO - Should probably offset the stream buffer from s8 to u8
-*        before here. This will give significant speed up in this
-*        critical bus-hold code path. In some cases like
-*        xgm2pcm_writebuf_do1 the performance gains here would
-*        make up for the offset cost.
+.macro  xgm2pcm_writebuf_movep_do64
+        movep.l 0(a0),d0
+        eor.l d1,d0
+        movep.l d0,0(a1)
+        movep.l 1(a0),d0
+        eor.l d1,d0
+        movep.l d0,1(a1)
 
-* Overwrite ring buffer. Cannot yet be used - see above todo.
+        movep.l 8(a0),d0
+        eor.l d1,d0
+        movep.l d0,8(a1)
+        movep.l 9(a0),d0
+        eor.l d1,d0
+        movep.l d0,9(a1)
 
-.macro  xgm2pcm_writebuf_do1
-        move.b  (a0)+,(a1)+
-.endm                                           * 12 cycles
+        movep.l 16(a0),d0
+        eor.l d1,d0
+        movep.l d0,16(a1)
+        movep.l 17(a0),d0
+        eor.l d1,d0
+        movep.l d0,17(a1)
+
+        movep.l 24(a0),d0
+        eor.l d1,d0
+        movep.l d0,24(a1)
+        movep.l 25(a0),d0
+        eor.l d1,d0
+        movep.l d0,25(a1)
+
+        movep.l 32(a0),d0
+        eor.l d1,d0
+        movep.l d0,32(a1)
+        movep.l 33(a0),d0
+        eor.l d1,d0
+        movep.l d0,33(a1)
+
+        movep.l 40(a0),d0
+        eor.l d1,d0
+        movep.l d0,40(a1)
+        movep.l 41(a0),d0
+        eor.l d1,d0
+        movep.l d0,41(a1)
+
+        movep.l 48(a0),d0
+        eor.l d1,d0
+        movep.l d0,48(a1)
+        movep.l 49(a0),d0
+        eor.l d1,d0
+        movep.l d0,49(a1)
+
+        movep.l 56(a0),d0
+        eor.l d1,d0
+        movep.l d0,56(a1)
+        movep.l 57(a0),d0
+        eor.l d1,d0
+        movep.l d0,57(a1)
+
+        adda.l d2,a0
+        adda.l d2,a1
+.endm                                           * 912 cycles = 14/samp
 
 * Mix into ring buffer with no overflow protection.
-* The end result if buffer is clean is equal to overwriting it.
 
 .macro  xgm2pcm_mixbuf_do1
         move.b  (a0)+,d0
@@ -38,7 +86,7 @@
         xgm2pcm_mixbuf_do8
         xgm2pcm_mixbuf_do8
         xgm2pcm_mixbuf_do8
-.endm                                           * 1280 cycles
+.endm                                           * 1280 cycles = 20/samp
 
 * Mix into ring buffer with overflow protection through clipping
 
@@ -78,4 +126,4 @@
         xgm2pcm_mixbuf_clip_do8
         xgm2pcm_mixbuf_clip_do8
         xgm2pcm_mixbuf_clip_do8
-.endm                                           * 2688 cycles
+.endm                                           * 2688 cycles = 42/samp
