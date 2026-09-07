@@ -33,6 +33,9 @@
 #define PARAM_ROW_ECHO_DELAY     2
 #define PARAM_ROW_ECHO_FEEDBACK  3
 
+#define PARAM_ROW_DRIVE_ENABLED  1
+#define PARAM_ROW_DRIVE_GAIN     2
+
 #define PARAM_ROW_YTOP           13
 #define PARAM_ROW_YOFFSET        2
 #define PARAM_ROW_XNAME          2
@@ -41,7 +44,7 @@
 
 static const char *tabNames[] = {"STREAM", "FILTER", " ECHO ", "REVERB", "DRIVE ", "OUTPUT"};
 static const char *filterTypeNames[] = {"1-POLE 6db", "2-POLE 12db", "2-P RESONANT 12db"};
-static u8 tabParamCnt[] = {0, 4, 3, 0, 0, 0};
+static u8 tabParamCnt[] = {0, 4, 3, 0, 2, 0};
 
 // ===========================
 // PRIVATE
@@ -144,6 +147,7 @@ static void changeParam(bool pressed, bool inc)
         filter_params_updated = true;
     }
 
+    // --- Echo ---
     if (currentTab == TAB_ECHO) {
         if (currentRow == 1 && pressed) {
             // Enabled
@@ -164,6 +168,28 @@ static void changeParam(bool pressed, bool inc)
         }
 
         echo_params_updated = true;
+    }
+
+    if (currentTab == TAB_DRIVE) {
+        if (currentRow == 1 && pressed) {
+            // Enabled
+            param_drive_enabled = !param_drive_enabled;
+        }
+
+        if (currentRow == 2 && !pressed) {
+            // Gain
+            if (inc) {
+                if (param_drive_gain < 255) {
+                    param_drive_gain += 1;
+                }
+            } else {
+                if (param_drive_gain > 0) {
+                    param_drive_gain -= 1;
+                }
+            }
+        }
+
+        drive_params_updated = true;
     }
 
     redrawParams = true;
@@ -313,6 +339,14 @@ static void drawOptions()
         writeParamValueText(param_echo_enabled ? "ON" : "OFF", PARAM_ROW_ECHO_ENABLED);
         writeParamValueU16(PARAM_ROW_ECHO_DELAY, param_echo_delay, "samples", 4);
         writeParamValueU16(PARAM_ROW_ECHO_FEEDBACK, param_filter_q, NULL, 5);
+    }
+
+    else if (currentTab == TAB_DRIVE) {
+        writeParamName("         ENABLED", PARAM_ROW_DRIVE_ENABLED);
+        writeParamName("            GAIN", PARAM_ROW_DRIVE_GAIN);
+
+        writeParamValueText(param_drive_enabled ? "ON" : "OFF", PARAM_ROW_ECHO_ENABLED);
+        writeParamValueU16(PARAM_ROW_ECHO_DELAY, param_drive_gain, "x", 3);
     }
 
     redrawParams = false;

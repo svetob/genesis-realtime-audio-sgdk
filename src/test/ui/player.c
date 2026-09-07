@@ -25,6 +25,10 @@ u16 param_echo_delay = 4096;
 u8 param_echo_feedback = 220;
 bool echo_params_updated = false;
 
+bool param_drive_enabled = false;
+u8 param_drive_gain = 2;
+bool drive_params_updated = false;
+
 // ===========================
 // PRIVATE
 // ===========================
@@ -47,7 +51,9 @@ static void streamProcessingCallback(s8 *stream, u16 len, void *data)
     if (param_echo_enabled) {
         AFX_echo_process(stream, len, afx_echo);
     }
-    AFX_drive_process(stream, len, afx_drive);
+    if (param_drive_enabled) {
+        AFX_drive_process(stream, len, afx_drive);
+    }
 }
 
 // ===========================
@@ -93,6 +99,9 @@ void updateParams()
         AFX_echo_update(afx_echo, param_echo_delay);
         AFX_echo_reset(afx_echo);
         echo_params_updated = false;
+    }
+    if (drive_params_updated) {
+        AFX_drive_update(afx_drive, DRIVE_DIGITAL_CLIP, param_drive_gain);
     }
     scanlineTimerStop();
 }

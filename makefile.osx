@@ -22,19 +22,19 @@ run-blastem: all asm-motorola
 	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem out/rom.bin > /dev/null &
 
 run-mame: all asm-motorola
-	$(GENESIS_DEV)/emulators/mame0289-arm64/mame genesis -cart $(OUT)/rom.bin
+	$(GENESIS_DEV)/emulators/mame0289-arm64/mame genesis -cart $(OUT)/rom.bin  &
 
 # --- Emulator: debug
 debug-blastem: build asm-motorola disasm
-	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem -d out/rom.bin
+	$(GENESIS_DEV)/emulators/blastem-osx-0.6.2/blastem -d out/rom.bin  &
 
 # Add your mame breakpoints here as symbols. TODO: Move to some file under debug/
-MAME_BP := XGM2PCM_SYS_disableInts_fast_noStack xgm2pcm_overwritebuffer_init xgm2pcm_overwritebuffer_ret VDP_waitVBlank.constprop.0
+MAME_BP := AFX_drive_process AFX_drive_process_body AFX_drive_process_ret
 gen-mame-debug-session:
 	@python3 tools/gen_mame_debug_session.py $(MAME_BP)
 
 debug-mame: build asm-motorola disasm gen-mame-debug-session
-	$(GENESIS_DEV)/emulators/mame0289-arm64/mame genesis -cart $(OUT)/rom.bin -debug -debugscript debug/mame-session
+	$(GENESIS_DEV)/emulators/mame0289-arm64/mame genesis -cart $(OUT)/rom.bin -debug -debugscript debug/mame-session &
 
 # --- Format and lint using clang-format
 SRC_FILES := $(wildcard src/*.c src/*.h src/*/*.c src/*/*.h src/*/*/*.c src/*/*/*.h)

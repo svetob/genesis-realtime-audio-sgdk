@@ -15,6 +15,7 @@ typedef struct {
 
 AFXDrive *AFX_drive_create(AFXDriveType type, u8 gain);
 void AFX_drive_free(AFXDrive *drive);
+void AFX_drive_update(AFXDrive *drive, AFXDriveType type, u8 gain);
 void AFX_drive_process(s8 *samples, u16 len, AFXDrive *drive);
 
 #endif

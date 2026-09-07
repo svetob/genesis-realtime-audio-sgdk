@@ -29,6 +29,10 @@ extern u16 param_echo_delay;
 extern u8 param_echo_feedback;
 extern bool echo_params_updated;
 
+extern bool param_drive_enabled;
+extern u8 param_drive_gain;
+extern bool drive_params_updated;
+
 void toggleVGM();
 void playSoundSnare();
 void playSoundSweep();
