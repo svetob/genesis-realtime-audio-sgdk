@@ -7,50 +7,48 @@
 *     u16 size,
 *     s8* delay_line,
 *     u16 pos,
-*     u16 len
+*     u16 len,
+*     u16 delay,
 * );
 
 func    AFX_echo_process64_ASM
-        movem.l a0-a2/d0-d6,-(sp)
+        movem.l a2/d2-d7,-(sp)
 
 afx_echo_init:
-        * samplesPtr -> a0
-        movea.l 44(sp),a0
-        * linePtr    -> a1
-        movea.l 52(sp),a1
+        * samplesPtr   -> a0
+        movea.l 32(sp),a0
+        * linePtr      -> a1
+        movea.l 40(sp),a1
 
-        * size       -> d0
-        move.l  48(sp),d0
-        * linePos    -> d1
-        move.l  56(sp),d1
-        * lineLen    -> d2
-        move.l  60(sp),d2
+        * size         -> d0
+        move.l  36(sp),d0
+        * linePos      -> d1
+        move.l  44(sp),d1
+        * lineMask     -> d2
+        move.l  48(sp),d2
+        subq.l  #1,d2
+        * linePosDelay -> d3
+        move.l  d1,d3
+        sub.l   52(sp),d3
+        and.l   d2,d3
+        * calc0        -> d4
 
+        * calc1        -> d5
 
-        * linePtrAt  -> a2
-        move.l  a1,a2
-        add.l   d1,a2
+        * calc2        -> d6
 
-        * linePtrEnd -> d5
-        move.l  a1,d5
-        add.l   d2,d5
-
+        * 0x80808080   -> d7
+        move.l  #0x80808080,d7
 
 afx_echo_loop:
 
 .L1:
         afx8_echo_doProcess64
 
-        * Wrap line ptr
-        cmpa.l  d5,a2
-        bcs     .L2
-        move.l  a1,a2
-
-.L2:
         * Loop
         subi.w  #64,d0
         bne     .L1
 
 afx_echo_return:
-        movem.l (sp)+,a0-a2/d0-d6
+        movem.l (sp)+,a2/d2-d7
         rts
