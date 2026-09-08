@@ -168,10 +168,10 @@ void PCMSTREAM_playSound(u8 *pcm, u32 len, PCMStream *stream)
      * Inserts the new sound into the list of playing sounds,
      * such that the list is a sorted list, sorted descending
      * by remaining playback length.
-     * 
+     *
      * This later allows playback ASM to make assumptions and
      * skip checks, saving cycles during playback.
-     * 
+     *
      * Sorting here in this way is O(n).
      */
     s8 i = 0;
@@ -186,13 +186,9 @@ void PCMSTREAM_playSound(u8 *pcm, u32 len, PCMStream *stream)
     if (i < PCMSTREAM_PLAYBACK_RAW_MAX) {
         if ((dataInsert->remain == 0) || (i == PCMSTREAM_PLAYBACK_RAW_MAX - 1)) {
             // Overwrite
-            KLog_U2("Overwriting. Remain ", dataInsert->remain, ", i ", i);
             dataInsert->pcm = pcm;
             dataInsert->remain = len;
         } else {
-            KLog_U1("Inserting ", i);
-            u8 iInsert = i;
-
             // Find copy start and end pos
             PCMSoundPlaybackRaw *dataSearch = dataInsert + 1;
             u8 iSearch = i + 1;

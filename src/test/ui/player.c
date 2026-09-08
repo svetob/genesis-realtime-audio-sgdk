@@ -97,7 +97,6 @@ void updateParams()
     }
     if (echo_params_updated) {
         AFX_echo_update(afx_echo, param_echo_delay);
-        AFX_echo_reset(afx_echo);
         echo_params_updated = false;
     }
     if (drive_params_updated) {
