@@ -3,6 +3,7 @@
         "ms-vscode.cpptools",
         "ms-vscode.cpptools-extension-pack",
         "zerasul.genesis-code",
+        "gigabates.m68k-lsp",
         "gigabates.68kcounter",
         "clcxce.motorola-68k-assembly",
         "xaver.clang-format"
