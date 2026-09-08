@@ -2,35 +2,36 @@
 #include "echo_mac.i"
 
 
-* extern void AFX_echo_process64_ASM(
+* extern void AFX_echo_process(
 *     s8* samples,
-*     u16 size,
-*     s8* delay_line,
-*     u16 pos,
 *     u16 len,
-*     u16 delay,
+*     AFXEcho *afx
 * );
 
-func    AFX_echo_process64_ASM
+func    AFX_echo_process
         movem.l d2-d7,-(sp)
 
 afx_echo_init:
         * samplesPtr   -> a0
         movea.l 28(sp),a0
-        * linePtr      -> a1
+        * afxPtr       -> a1
         movea.l 36(sp),a1
 
-        * size         -> d0
+        * samplesLen   -> d0
         move.l  32(sp),d0
         * linePos      -> d1
-        move.l  40(sp),d1
+        move.w  8(a1),d1
         * lineMask     -> d2
-        move.l  44(sp),d2
-        subq.l  #1,d2
+        move.w  4(a1),d2
+        subq.w  #1,d2
         * linePosDelay -> d3
         move.l  d1,d3
-        sub.l   48(sp),d3
-        and.l   d2,d3
+        sub.w   6(a1),d3
+        and.w   d2,d3
+
+        * linePtr      -> a1
+        movea.l (a1),a1
+
         * calc0        -> d4
 
         * calc1        -> d5
@@ -50,5 +51,9 @@ afx_echo_loop:
         bne     .L1
 
 afx_echo_return:
+        * Write back pos
+        movea.l 36(sp),a1
+        move.w  d1,8(a1)
+
         movem.l (sp)+,d2-d7
         rts

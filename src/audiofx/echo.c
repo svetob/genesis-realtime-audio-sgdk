@@ -38,9 +38,4 @@ void AFX_echo_update(AFXEcho *afx, u16 delay)
     afx->delay = delay & 0xFFFC; // Must be multiple of 4
 }
 
-void AFX_echo_process(s8 *samples, u16 len, AFXEcho *afx)
-{
-    AFX_echo_process64_ASM(samples, len, afx->delayLine, afx->pos, afx->size, afx->delay);
-
-    afx->pos = (afx->pos + len) & (afx->size - 1);
-}
+extern void AFX_echo_process(s8 *samples, u16 len, AFXEcho *afx);
