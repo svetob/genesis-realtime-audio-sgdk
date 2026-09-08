@@ -29,23 +29,13 @@ void AFX_echo_free(AFXEcho *afx)
 
 void AFX_echo_reset(AFXEcho *afx)
 {
-    memset(afx->delayLine, 0, afx->size);
+    memsetU32(afx->delayLine, 0, afx->size >> 2);
     afx->pos = 0;
 }
 
 void AFX_echo_update(AFXEcho *afx, u16 delay)
 {
-    if (delay != afx->delay) {
-        delay = delay & 0xFFFC; // Must be multiple of 4
-        if (delay > afx->size) {
-            delay = afx->size;
-        }
-        afx->delay = delay;
-
-        while (afx->pos >= delay) {
-            afx->pos -= delay;
-        }
-    }
+    afx->delay = delay & 0xFFFC; // Must be multiple of 4
 }
 
 void AFX_echo_process(s8 *samples, u16 len, AFXEcho *afx)
