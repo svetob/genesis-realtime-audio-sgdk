@@ -3,13 +3,38 @@
 
 static char logbuf[40];
 
+// Unnamed val - Dec / Hex, Signed / Unsigned
+void logU8(u8 val, u16 x, u16 y, u16 minsize)
+{
+    intToStr(val, logbuf, minsize);
+    VDP_drawText(logbuf, x, y);
+}
+
 void logU8H(u8 val, u16 x, u16 y)
 {
     intToHex(val, logbuf, 2);
     VDP_drawText(logbuf, x, y);
 }
 
+void logU16(u16 val, u16 x, u16 y, u16 minsize)
+{
+    intToStr(val, logbuf, minsize);
+    VDP_drawText(logbuf, x, y);
+}
+
 void logU16H(u16 val, u16 x, u16 y)
+{
+    intToHex(val, logbuf, 4);
+    VDP_drawText(logbuf, x, y);
+}
+
+void logS16(s16 val, u16 x, u16 y, u16 minsize)
+{
+    intToStr(val, logbuf, minsize);
+    VDP_drawText(logbuf, x, y);
+}
+
+void logS16H(s16 val, u16 x, u16 y)
 {
     intToHex(val, logbuf, 4);
     VDP_drawText(logbuf, x, y);
@@ -27,43 +52,8 @@ void logU32H(u32 val, u16 x, u16 y)
     VDP_drawText(logbuf, x, y);
 }
 
-void logS16H(s16 val, u16 x, u16 y)
-{
-    intToHex(val, logbuf, 4);
-    VDP_drawText(logbuf, x, y);
-}
-
-void logS16(s16 val, u16 x, u16 y, u16 minsize)
-{
-    intToStr(val, logbuf, minsize);
-    VDP_drawText(logbuf, x, y);
-}
-
-void logNamedU32H(const char *name, u32 val, u16 x, u16 y)
-{
-    VDP_drawText(name, x, y);
-    VDP_drawText(":", x + strlen(name), y);
-    intToHex(val, logbuf, 8);
-    VDP_drawText(logbuf, x + strlen(name) + 2, y);
-}
-
-void logNamedU32(const char *name, u32 val, u16 x, u16 y, u16 minsize)
-{
-    VDP_drawText(name, x, y);
-    VDP_drawText(":", x + strlen(name), y);
-    intToStr(val, logbuf, minsize);
-    VDP_drawText(logbuf, x + strlen(name) + 2, y);
-}
-
-void logNamedU16H(const char *name, u16 val, u16 x, u16 y)
-{
-    VDP_drawText(name, x, y);
-    VDP_drawText(":", x + strlen(name), y);
-    intToHex(val, logbuf, 4);
-    VDP_drawText(logbuf, x + strlen(name) + 2, y);
-}
-
-void logNamedU16(const char *name, u16 val, u16 x, u16 y, u16 minsize)
+// Named val - Dec / Hex
+void logNamedU8(const char *name, u8 val, u16 x, u16 y, u16 minsize)
 {
     VDP_drawText(name, x, y);
     VDP_drawText(":", x + strlen(name), y);
@@ -79,7 +69,7 @@ void logNamedU8H(const char *name, u8 val, u16 x, u16 y)
     VDP_drawText(logbuf, x + strlen(name) + 2, y);
 }
 
-void logNamedU8(const char *name, u8 val, u16 x, u16 y, u16 minsize)
+void logNamedU16(const char *name, u16 val, u16 x, u16 y, u16 minsize)
 {
     VDP_drawText(name, x, y);
     VDP_drawText(":", x + strlen(name), y);
@@ -87,6 +77,31 @@ void logNamedU8(const char *name, u8 val, u16 x, u16 y, u16 minsize)
     VDP_drawText(logbuf, x + strlen(name) + 2, y);
 }
 
+void logNamedU16H(const char *name, u16 val, u16 x, u16 y)
+{
+    VDP_drawText(name, x, y);
+    VDP_drawText(":", x + strlen(name), y);
+    intToHex(val, logbuf, 4);
+    VDP_drawText(logbuf, x + strlen(name) + 2, y);
+}
+
+void logNamedU32(const char *name, u32 val, u16 x, u16 y, u16 minsize)
+{
+    VDP_drawText(name, x, y);
+    VDP_drawText(":", x + strlen(name), y);
+    intToStr(val, logbuf, minsize);
+    VDP_drawText(logbuf, x + strlen(name) + 2, y);
+}
+
+void logNamedU32H(const char *name, u32 val, u16 x, u16 y)
+{
+    VDP_drawText(name, x, y);
+    VDP_drawText(":", x + strlen(name), y);
+    intToHex(val, logbuf, 8);
+    VDP_drawText(logbuf, x + strlen(name) + 2, y);
+}
+
+// Named pointer
 void logNamedPtr(const char *name, void *ptr, u16 x, u16 y)
 {
     VDP_drawText(name, x, y);
@@ -103,6 +118,7 @@ void logNamedPtrU16(const char *name, void *ptr, u16 x, u16 y)
     VDP_drawText(logbuf, x + strlen(name) + 1, y);
 }
 
+// Named array
 void logNamedArrayU8H(const char *name, u8 *arr, u16 n, u8 width, u16 y)
 {
     VDP_drawText("[", 1, y);

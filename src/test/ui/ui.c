@@ -55,6 +55,7 @@ static u8 currentRow = 0;
 static s8 tabRollerOffset = 0;
 
 static bool redrawParams = false;
+static bool redrawParamSelector = 0;
 static u8 redrawParamRow = 0;
 
 static char paramStrBuf[10];
@@ -79,9 +80,11 @@ static u8 paramToStrU16(u16 val, char *unit, u8 minLen)
 
 inline static void writeParamValueU16(u8 row, u16 val, char *unit, u8 minLen)
 {
-    u8 len = paramToStrU16(val, unit, minLen);
-    VDP_drawText(paramStrBuf, PARAM_ROW_XVALUE, PARAM_ROW_YPOS(row));
-    VDP_drawText(unit, PARAM_ROW_XVALUE + len + 1, PARAM_ROW_YPOS(row));
+    if (redrawParams || redrawParamRow == row) {
+        u8 len = paramToStrU16(val, unit, minLen);
+        VDP_drawText(paramStrBuf, PARAM_ROW_XVALUE, PARAM_ROW_YPOS(row));
+        VDP_drawText(unit, PARAM_ROW_XVALUE + len, PARAM_ROW_YPOS(row));
+    }
 }
 
 inline static void writeParamValueText(char *val, u8 row)
@@ -192,7 +195,7 @@ static void changeParam(bool pressed, bool inc)
         drive_params_updated = true;
     }
 
-    redrawParams = true;
+    redrawParamRow = currentRow;
 }
 
 static void handleInputHeld(u16 joy)
@@ -220,14 +223,14 @@ static void handleInput(u16 joy)
         if (currentRow > 0) {
             currentRow -= 1;
         }
-        redrawParams = true;
+        redrawParamSelector = true;
     }
 
     if (changed & joy & BUTTON_DOWN) {
         if (currentRow < tabParamCnt[currentTab]) {
             currentRow += 1;
         }
-        redrawParams = true;
+        redrawParamSelector = true;
     }
 
     if (changed & joy & BUTTON_LEFT) {
@@ -306,15 +309,20 @@ static void drawTabs()
 
 static void drawOptions()
 {
-    if (!redrawParams && !redrawParamRow) {
+    if (!redrawParams && !redrawParamSelector && !redrawParamRow) {
         return;
     }
 
     if (redrawParams) {
-        VDP_clearTextArea(0, PARAM_ROW_YTOP, 40, 20);
+        VDP_clearTextArea(0, PARAM_ROW_YTOP, 40, 11);
+    } else if (redrawParamSelector) {
+        VDP_clearTextArea(PARAM_ROW_XVALUE - 2, PARAM_ROW_YTOP, 1,
+                          (tabParamCnt[currentTab] << 1) - 1);
+    } else if (redrawParamRow) {
+        VDP_clearTextArea(PARAM_ROW_XVALUE, PARAM_ROW_YPOS(redrawParamRow), 18, 1);
     }
 
-    if (currentRow > 0) {
+    if (currentRow > 0 && (redrawParams | redrawParamSelector)) {
         VDP_drawText(">", PARAM_ROW_XVALUE - 2,
                      PARAM_ROW_YTOP + (PARAM_ROW_YOFFSET * (currentRow - 1)));
     }
@@ -337,7 +345,7 @@ static void drawOptions()
         writeParamName("        FEEDBACK", PARAM_ROW_ECHO_FEEDBACK);
 
         writeParamValueText(param_echo_enabled ? "ON" : "OFF", PARAM_ROW_ECHO_ENABLED);
-        writeParamValueU16(PARAM_ROW_ECHO_DELAY, param_echo_delay, "samples", 4);
+        writeParamValueU16(PARAM_ROW_ECHO_DELAY, param_echo_delay, " samples", 4);
         writeParamValueU16(PARAM_ROW_ECHO_FEEDBACK, param_filter_q, NULL, 5);
     }
 
@@ -346,10 +354,12 @@ static void drawOptions()
         writeParamName("            GAIN", PARAM_ROW_DRIVE_GAIN);
 
         writeParamValueText(param_drive_enabled ? "ON" : "OFF", PARAM_ROW_ECHO_ENABLED);
-        writeParamValueU16(PARAM_ROW_ECHO_DELAY, param_drive_gain, "x", 3);
+        writeParamValueU16(PARAM_ROW_ECHO_DELAY, param_drive_gain, "x", 1);
     }
 
     redrawParams = false;
+    redrawParamSelector = false;
+    redrawParamRow = false;
 }
 
 // ===========================
@@ -367,6 +377,13 @@ void runUI()
     JOY_setEventHandler(NULL);
     Z80_loadDriver(Z80_DRIVER_XGM2, true);
 
+#ifdef UI_DISPLAY_FRAME_COUNT
+    VDP_drawText("   FRAMES", 1, 26);
+#endif
+#ifdef UI_DISPLAY_SCANLINES
+    VDP_drawText("SCANLINES     / 262", 1, 27);
+#endif
+
     startStream();
 
     while (true) {
@@ -383,10 +400,10 @@ void runUI()
 #endif
 
 #ifdef UI_DISPLAY_FRAME_COUNT
-        logNamedU16("FRAMES", frame_ctr, 1, 26, 3);
+        logU16(frame_ctr, 11, 26, 3);
 #endif
 #ifdef UI_DISPLAY_SCANLINES
-        logNamedU16("SCANLINES", scanlines_avg, 1, 27, 3);
+        logU16(scanlines_avg, 11, 27, 3);
 #endif
 
         // PCM Stream updates
