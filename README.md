@@ -6,7 +6,7 @@ The ROM generates audio and applies effects (echo) in real time on the main 6800
 
 ## Getting started
 
-A prebuit rom is in [out/rom.bin](out/rom.bin). Press A to play a sound effect with echo applied.
+A prebuit rom is in [out/rom.bin](out/rom.bin). Press A or B to play some sounds, and navigate the menu to turn on effects and tweak knobs.
 
 ## How the XGM2 driver integration is done
 
@@ -16,19 +16,9 @@ However, XGM2 renders PCM streams in advance to an __internal PCM ring buffer__.
 
 So, this library works by generating a 13.3khz signed 8-bit PCM stream in software, and then submitting it to the DAC output by mixing it into the XGM2's internal ring buffer with multiple writes per frame.
 
+It also seems like most sounds drivers, including MDSDRV, Echo, XGM1 etc use internal PCM ring buffers, so it should be possible to integrate with all of these.
+
 ## Known Issues
-
-### 8-bit vs 16-bit audio effects
-
-The PCM output is 8-bit, so the straightforward approach for audio processing is 8-bit audio effects. However, in addition to the obvious lower audio fidelity, 8-bit audio effects also suffer from other problems, such as:
-
-- Audio overflow, instead of clipping
-- Audible noise floors
-- Loss of precision when increasing gain on low audio signals
-
-16-bit audio effects solve all the above problems, with the main tradeoff being more CPU cycles needed.
-
-That said, you should be able to get away with using 8-bit audio effects, by being careful with audio levels when mixing to avoid overflows, and chaining effects carefully to avoid the other issues.
 
 ### Stream update timing
 
