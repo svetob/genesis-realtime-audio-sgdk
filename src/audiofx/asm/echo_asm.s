@@ -36,8 +36,8 @@ afx_echo_init:
 
         * calc1        -> d5
 
-        * calc2        -> d6
-
+        * 0x0x7F7F7F7F -> d6
+        move.l  #0x7F7F7F7F,d6
         * 0x80808080   -> d7
         move.l  #0x80808080,d7
 
