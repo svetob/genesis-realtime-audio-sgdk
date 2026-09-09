@@ -44,7 +44,7 @@ afx_echo_init:
 afx_echo_loop:
 
 .L1:
-        afx8_echo_doProcess64
+        afx8_echo_50fb_doProcess64
 
         * Loop
         subi.w  #64,d0
