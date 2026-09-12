@@ -1,6 +1,8 @@
 #include <genesis.h>
 #include "reverb.h"
 
+#define TO_DELAY_VALUE(x) (x << 2) // Must be multiple of 4
+
 AFXReverb *AFX_reverb_create(AFXReverbBufferSize bufferSize)
 {
     void *buf = MEM_alloc(bufferSize);
@@ -11,10 +13,10 @@ AFXReverb *AFX_reverb_create(AFXReverbBufferSize bufferSize)
     afx->size = bufferSize;
     afx->pos = 0;
 
-    afx->delay1 = 2800 & 0xFFFC; // Must be multiple of 4
-    afx->delay2 = 3200 & 0xFFFC; // Must be multiple of 4
-    afx->delay3 = 3600 & 0xFFFC; // Must be multiple of 4
-    afx->delay4 = 3900 & 0xFFFC; // Must be multiple of 4
+    afx->delay1 = TO_DELAY_VALUE(97);
+    afx->delay2 = TO_DELAY_VALUE(211);
+    afx->delay3 = TO_DELAY_VALUE(421);
+    afx->delay4 = TO_DELAY_VALUE(1021);
 
     return afx;
 }

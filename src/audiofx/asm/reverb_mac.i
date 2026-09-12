@@ -21,29 +21,56 @@
         add.l   d7,d6
         * '98c
 
-        * Now mix directly into sample buffer (without overflow protection)
-        add.l   d6,(a0)
+        * Add to delay accumulator (without overflow protection)
+        add.l   d6,d1
+.endm
+
+.macro  afx8_reverb_quarterAndMixDelaySampleD6
+        afx8_reverb_fixMinusOneDelaySampleD6
+
+        * Get delay line sign bits into d7
+        move.l  d6,d7
+        and.l   #0x80808080,d7
+
+        * 25% delay line feedback
+        asr.l   #2,d6
+
+        * Reattach sign bits
+        and.l   #0x3F3F3F3F,d6
+        add.l   d7,d6
+        lsr.l   #1,d7
+        add.l   d7,d6
+        * '98c
+
+        * Add to delay accumulator (without overflow protection)
+        add.l   d6,d1
 .endm
 
 .macro  afx8_reverb_doProcess4
+        moveq.l #0,d1
+
         * Process delay line sample 1
         move.l  (a1,d2.w),d6
-        afx8_reverb_halveAndMixDelaySampleD6
+        afx8_reverb_quarterAndMixDelaySampleD6
 
         * Process delay line sample 2
         move.l  (a1,d3.w),d6
-        afx8_reverb_halveAndMixDelaySampleD6
+        afx8_reverb_quarterAndMixDelaySampleD6
 
         * Process delay line sample 3
         move.l  (a1,d4.w),d6
-        afx8_reverb_halveAndMixDelaySampleD6
+        afx8_reverb_quarterAndMixDelaySampleD6
 
         * Process delay line sample 4
         move.l  (a1,d5.w),d6
-        afx8_reverb_halveAndMixDelaySampleD6
+        afx8_reverb_quarterAndMixDelaySampleD6
+
+        * Now mix (without overflow protection)
+        add.l   (a0),d1
 
         * Write result in out to delay line
-        move.l  (a0)+,(a1,d0.w)
+        move.l  d1,(a0)+
+        move.l  d1,(a1,d0.w)
 
         * Increment and wrap line pointers
         addq.w  #4,d0
