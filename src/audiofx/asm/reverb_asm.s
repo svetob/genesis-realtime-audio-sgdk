@@ -21,11 +21,10 @@ afx_reverb_init:
         move.w  4(a1),d1
         subq.w  #1,d1
 
-        * lineMaskPtr  -> a2
+        * lineMask  -> a2
         move.w  4(a1),d1
         subq.w  #1,d1
-        lea     -2(sp),a2
-        move.w  d1,(a2)
+        move.w  d1,a2
 
         * linePos      -> d0
         move.w  6(a1),d0
