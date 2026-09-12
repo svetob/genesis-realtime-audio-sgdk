@@ -4,6 +4,7 @@
 
 #include <audiofx/drive.h>
 #include <audiofx/echo.h>
+#include <audiofx/reverb.h>
 #include <audiofx/filterlp.h>
 #include <pcmstream/pcmstream.h>
 
@@ -34,10 +35,10 @@ bool drive_params_updated = false;
 // ===========================
 
 #define PCM_PLAYBACK_RATE 13300
-#define ECHO_BUFFER_SIZE  4096
 
 PCMStream *pcm_stream = NULL;
 static AFXEcho *afx_echo = NULL;
+static AFXReverb *afx_reverb = NULL;
 static AFXFilterLP *afx_filter_lp = NULL;
 static AFXDrive *afx_drive = NULL;
 
@@ -51,6 +52,7 @@ static void streamProcessingCallback(s8 *stream, u16 len, void *data)
     if (param_echo_enabled) {
         AFX_echo_process(stream, len, afx_echo);
     }
+    AFX_reverb_process(stream, len, afx_reverb);
     if (param_drive_enabled) {
         AFX_drive_process(stream, len, afx_drive);
     }
@@ -71,7 +73,11 @@ void startStream()
     }
 
     if (afx_echo == NULL) {
-        afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE, param_echo_delay);
+        afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE_4096, param_echo_delay);
+    }
+
+    if (afx_reverb == NULL) {
+        afx_reverb = AFX_reverb_create(REVERB_BUFFER_SIZE_4096);
     }
 
     if (afx_filter_lp == NULL) {
@@ -118,7 +124,7 @@ void resetStream()
     PCMSTREAM_reset(pcm_stream);
 
     AFX_echo_free(afx_echo);
-    afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE, param_echo_delay);
+    afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE_4096, param_echo_delay);
 
     AFX_filter_lp_free(afx_filter_lp);
     afx_filter_lp = AFX_filter_lp_create(param_filter_type, param_filter_freq, param_filter_q);
