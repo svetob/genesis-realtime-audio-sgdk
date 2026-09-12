@@ -26,9 +26,20 @@
 .endm
 
 .macro  afx8_reverb_doProcess4
-        * Read delayed line sample 1
+        * Process delay line sample 1
         move.l  (a1,d2.w),d6
+        afx8_reverb_halveAndMixDelaySample
 
+        * Process delay line sample 2
+        move.l  (a1,d3.w),d6
+        afx8_reverb_halveAndMixDelaySample
+
+        * Process delay line sample 3
+        move.l  (a1,d4.w),d6
+        afx8_reverb_halveAndMixDelaySample
+
+        * Process delay line sample 4
+        move.l  (a1,d5.w),d6
         afx8_reverb_halveAndMixDelaySample
 
         * Write result in out to delay line
