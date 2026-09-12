@@ -1,5 +1,5 @@
 
-.macro  afx8_echo_50fb_doProcess4
+.macro  afx8_echo_doProcess4
         * Read delayed line sample into d4
         move.l  (a1,d3.w),d4
         * '18c
@@ -40,50 +40,88 @@
         and.w   d2,d3
 .endm                                           * 156 cycles = 39 / sample
 
-.macro  afx8_echo_50fb_doProcess64
-        afx8_echo_50fb_doProcess4
-        afx8_echo_50fb_doProcess4
-        afx8_echo_50fb_doProcess4
-        afx8_echo_50fb_doProcess4
+.macro  afx8_echo_doProcess64
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
 
-        afx8_echo_50fb_doProcess4
-        afx8_echo_50fb_doProcess4
-        afx8_echo_50fb_doProcess4
-        afx8_echo_50fb_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
 
-        afx8_echo_50fb_doProcess4
-        afx8_echo_50fb_doProcess4
-        afx8_echo_50fb_doProcess4
-        afx8_echo_50fb_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
 
-        afx8_echo_50fb_doProcess4
-        afx8_echo_50fb_doProcess4
-        afx8_echo_50fb_doProcess4
-        afx8_echo_50fb_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
+        afx8_echo_doProcess4
 .endm
 
-.macro  afx8_echo_75fb_doProcess4
+* TODO: Test and fix later after reverb
 
-.endm                                           * 172 cycles = 43 / sample
+.macro  afx8_echo_feedback_doProcess1
+        * Read line sample
+        move.b  (a4)+,d4
+        * Apply feedback
+        move.b  (a2,d5.w),d4
 
-.macro  afx8_echo_75fb_doProcess64
-        afx8_echo_75fb_doProcess4
-        afx8_echo_75fb_doProcess4
-        afx8_echo_75fb_doProcess4
-        afx8_echo_75fb_doProcess4
+        * Mix
+        add.b   (a0),d4
+        * '30c
 
-        afx8_echo_75fb_doProcess4
-        afx8_echo_75fb_doProcess4
-        afx8_echo_75fb_doProcess4
-        afx8_echo_75fb_doProcess4
+        * Maybe clip
+        bvs     .L\@noclip
+        smi     d4
+        eori.b  #0x80,d4
+.L\@noclip
+        * '42/54c
 
-        afx8_echo_75fb_doProcess4
-        afx8_echo_75fb_doProcess4
-        afx8_echo_75fb_doProcess4
-        afx8_echo_75fb_doProcess4
+        * Write to out
+        move.b  d4,(a0)+
+        move.b  d4,(a3)+
+.endm                                           * '58/70c
 
-        afx8_echo_75fb_doProcess4
-        afx8_echo_75fb_doProcess4
-        afx8_echo_75fb_doProcess4
-        afx8_echo_75fb_doProcess4
+.macro  afx8_echo_feedback_doProcess4
+        afx8_echo_feedback_doProcess1
+        afx8_echo_feedback_doProcess1
+        afx8_echo_feedback_doProcess1
+        afx8_echo_feedback_doProcess1
+
+        * Increment and wrap
+        addq.w  #4,d1
+        addq.w  #4,d3
+        and.w   d2,d1
+        and.w   d2,d3
+
+        * Load line current pos ptr
+        lea     (a1,d1.w),a3
+        * Load line current pos ptr
+        lea     (a1,d3.w),a4
+.endm
+
+.macro  afx8_echo_feedback_doProcess64
+        afx8_echo_feedback_doProcess4
+        afx8_echo_feedback_doProcess4
+        afx8_echo_feedback_doProcess4
+        afx8_echo_feedback_doProcess4
+
+        afx8_echo_feedback_doProcess4
+        afx8_echo_feedback_doProcess4
+        afx8_echo_feedback_doProcess4
+        afx8_echo_feedback_doProcess4
+
+        afx8_echo_feedback_doProcess4
+        afx8_echo_feedback_doProcess4
+        afx8_echo_feedback_doProcess4
+        afx8_echo_feedback_doProcess4
+
+        afx8_echo_feedback_doProcess4
+        afx8_echo_feedback_doProcess4
+        afx8_echo_feedback_doProcess4
+        afx8_echo_feedback_doProcess4
 .endm
