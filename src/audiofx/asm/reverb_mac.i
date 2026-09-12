@@ -78,7 +78,7 @@
         afx8_reverb_quarterAndMixDelaySampleD6
 
         * Now mix (without overflow protection)
-        move    (a0),d6
+        move.l  (a0),d6
         afx8_reverb_halveSampleD6
         add.l   d6,d1
 
