@@ -17,29 +17,28 @@ afx_reverb_init:
         * afxPtr       -> a1
         movea.l 36(sp),a1
 
-        * samplesLen   -> d0
-        move.l  32(sp),d0
-        * linePos      -> d1
-        move.w  6(a1),d1
-        * lineMask     -> d2
-        move.w  4(a1),d2
-        subq.w  #1,d2
-        * linePosDelay -> d3
-        move.l  d1,d3
-        sub.w   8(a1),d3
-        and.w   d2,d3
+        * linePos      -> d0
+        move.w  6(a1),d0
+        * lineMask     -> d1
+        move.w  4(a1),d1
+        subq.w  #1,d1
+        * delayPos1    -> d2
+        move.l  d0,d2
+        sub.w   8(a1),d2
+        and.w   d1,d2
+        * delayPos2    -> d3
+        move.l  d0,d3
+        sub.w   10(a1),d3
+        and.w   d1,d3
+
+
+
+        * calc0        -> d6
+
+        * calc1        -> d7
 
         * linePtr      -> a1
         movea.l (a1),a1
-
-        * calc0        -> d4
-
-        * calc1        -> d5
-
-        * 0x0x7F7F7F7F -> d6
-        move.l  #0x7F7F7F7F,d6
-        * 0x80808080   -> d7
-        move.l  #0x80808080,d7
 
 afx_reverb_loop:
 
@@ -47,13 +46,13 @@ afx_reverb_loop:
         afx8_reverb_doProcess64
 
         * Loop
-        subi.w  #64,d0
+        subi.w  #64,34(sp)
         bne     .L1
 
 afx_reverb_return:
         * Write back pos
         movea.l 36(sp),a1
-        move.w  d1,6(a1)
+        move.w  d0,6(a1)
 
         movem.l (sp)+,d2-d7
         rts
