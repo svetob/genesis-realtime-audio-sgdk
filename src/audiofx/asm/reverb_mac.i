@@ -1,10 +1,6 @@
 
-.macro  afx8_reverb_doProcess4
-        * Read delayed line sample into d6
-        move.l  (a1,d2.w),d6
-        * '18c
-
-        * -- Mix em together, result in d6
+.macro  afx8_reverb_halveAndMixDelaySample
+        * -- Delay sample is in d6
 
         * Fix for 0xFF >> 1 = 0xFF (-1 >> 1 = -1) leaving behind a noise floor in delay line
         move.l  d6,d7
@@ -25,13 +21,18 @@
         add.l   d7,d6
         * '98c
 
-        * Now mix (without overflow protection)
-        add.l   (a0),d6
+        * Now mix directly into sample buffer (without overflow protection)
+        add.l   d6,(a0)
+.endm
 
-        * --Write result to out and line
-        move.l  d6,(a0)+
-        move.l  d6,(a1,d0.w)
-        * '142c
+.macro  afx8_reverb_doProcess4
+        * Read delayed line sample 1
+        move.l  (a1,d2.w),d6
+
+        afx8_reverb_halveAndMixDelaySample
+
+        * Write result in out to delay line
+        move.l  (a0)+,(a1,d0.w)
 
         * Increment and wrap line pointers
         addq.w  #4,d0
@@ -40,7 +41,7 @@
         and.w   d1,d0
         and.w   d1,d2
         and.w   d1,d3
-.endm                                           * 156 cycles = 39 / sample
+.endm
 
 .macro  afx8_reverb_doProcess64
         afx8_reverb_doProcess4
