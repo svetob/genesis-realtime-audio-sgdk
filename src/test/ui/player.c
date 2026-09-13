@@ -24,6 +24,7 @@ bool filter_params_updated = false;
 bool param_echo_enabled = false;
 u16 param_echo_delay = 4096;
 u8 param_echo_feedback = 220;
+bool param_echo_overflow_protect = true;
 bool echo_params_updated = false;
 
 bool param_drive_enabled = false;
@@ -73,7 +74,7 @@ void startStream()
     }
 
     if (afx_echo == NULL) {
-        afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE_4096, param_echo_delay);
+        afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE_4096, param_echo_delay, param_echo_overflow_protect);
     }
 
     if (afx_reverb == NULL) {
@@ -102,7 +103,7 @@ void updateParams()
         filter_params_updated = false;
     }
     if (echo_params_updated) {
-        AFX_echo_update(afx_echo, param_echo_delay);
+        AFX_echo_update(afx_echo, param_echo_delay, param_echo_overflow_protect);
         echo_params_updated = false;
     }
     if (drive_params_updated) {
@@ -124,7 +125,7 @@ void resetStream()
     PCMSTREAM_reset(pcm_stream);
 
     AFX_echo_free(afx_echo);
-    afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE_4096, param_echo_delay);
+    afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE_4096, param_echo_delay, param_echo_overflow_protect);
 
     AFX_filter_lp_free(afx_filter_lp);
     afx_filter_lp = AFX_filter_lp_create(param_filter_type, param_filter_freq, param_filter_q);
