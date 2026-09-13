@@ -36,7 +36,7 @@ debug-blastem: build asm-motorola
 	$(BLASTEM_PATH)\blastem.exe $(OUT)\rom.bin
 
 # Add your mame breakpoints here as symbols. TODO: Move to some file under debug/
-MAME_BP := pcmstream_sound_raw_playback_body_2pcm
+MAME_BP := afx_echo_protect_branch_20
 gen-mame-debug-session:
 	@python3 tools/gen_mame_debug_session.py $(MAME_BP)
 
