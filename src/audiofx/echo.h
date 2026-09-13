@@ -28,7 +28,6 @@ typedef struct {
  *
  * \param bufferSize
  *      Buffer size, in samples.
- *      Must be a power of two and >= 1024.
  *
  * \param delay
  *      Delay, in samples.
@@ -38,7 +37,7 @@ typedef struct {
  *      If true, checks for overflow during mixing and protects
  *      against it by clipping the sample.
  */
-AFXEcho *AFX_echo_create(u16 bufferSize, u16 delay, bool overflowProtection);
+AFXEcho *AFX_echo_create(AFXEchoBufferSize bufferSize, u16 delay, bool overflowProtection);
 
 /**
  * \brief
