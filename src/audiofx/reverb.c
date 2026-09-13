@@ -13,10 +13,11 @@ AFXReverb *AFX_reverb_create(AFXReverbBufferSize bufferSize)
     afx->size = bufferSize;
     afx->pos = 0;
 
-    afx->delay1 = TO_DELAY_VALUE(97);
-    afx->delay2 = TO_DELAY_VALUE(211);
-    afx->delay3 = TO_DELAY_VALUE(421);
-    afx->delay4 = TO_DELAY_VALUE(1021);
+    // Delays loosely based on Freeverb (Schroeder-Moorer) with a damping pair
+    afx->delay1 = TO_DELAY_VALUE(91);
+    afx->delay2 = TO_DELAY_VALUE(92);
+    afx->delay3 = TO_DELAY_VALUE(142);
+    afx->delay4 = TO_DELAY_VALUE(143);
 
     return afx;
 }
