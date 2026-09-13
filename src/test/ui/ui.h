@@ -27,6 +27,7 @@ extern bool filter_params_updated;
 extern bool param_echo_enabled;
 extern u16 param_echo_delay;
 extern u8 param_echo_feedback;
+extern bool param_echo_overflow_protect;
 extern bool echo_params_updated;
 
 extern bool param_drive_enabled;

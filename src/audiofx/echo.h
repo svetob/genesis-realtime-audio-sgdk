@@ -12,6 +12,7 @@ typedef struct {
     u16 size;
     u16 delay;
     u16 pos;
+    bool overflowProtection;
 } AFXEcho;
 
 /**
@@ -24,8 +25,12 @@ typedef struct {
  * \param delay
  *      Delay, in samples. Must be multiple of 256 and not
  *      greater than bufferSize.
+ *
+ * \param overflowProtection
+ *      If true, checks for overflow during mixing and protects
+ *      against it by clipping the sample.
  */
-AFXEcho *AFX_echo_create(u16 bufferSize, u16 delay);
+AFXEcho *AFX_echo_create(u16 bufferSize, u16 delay, bool overflowProtection);
 
 /**
  * \brief
@@ -34,8 +39,12 @@ AFXEcho *AFX_echo_create(u16 bufferSize, u16 delay);
  * \param delay
  *      Delay, in samples. Must be multiple of 256 and not
  *      greater than bufferSize.
+ *
+ * \param overflowProtection
+ *      If true, checks for overflow during mixing and protects
+ *      against it by clipping the sample.
  */
-void AFX_echo_update(AFXEcho *afx, u16 delay);
+void AFX_echo_update(AFXEcho *afx, u16 delay, bool overflowProtection);
 
 /**
  * \brief

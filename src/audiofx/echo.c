@@ -4,7 +4,7 @@
 extern void AFX_echo_process64_ASM(s8 *samples, u16 size, s8 *delay_line, u16 pos, u16 len,
                                    u16 delay);
 
-AFXEcho *AFX_echo_create(u16 bufferSize, u16 delay)
+AFXEcho *AFX_echo_create(u16 bufferSize, u16 delay, bool overflowProtection)
 {
     delay = delay & 0xFFFC;           // Must be multiple of 4
     bufferSize = bufferSize & 0xFC00; // Must be multiple of 1024
@@ -17,6 +17,7 @@ AFXEcho *AFX_echo_create(u16 bufferSize, u16 delay)
     afx->size = bufferSize;
     afx->delay = delay;
     afx->pos = 0;
+    afx->overflowProtection = overflowProtection;
 
     return afx;
 }
@@ -33,9 +34,20 @@ void AFX_echo_reset(AFXEcho *afx)
     afx->pos = 0;
 }
 
-void AFX_echo_update(AFXEcho *afx, u16 delay)
+void AFX_echo_update(AFXEcho *afx, u16 delay, bool overflowProtection)
 {
     afx->delay = delay & 0xFFFC; // Must be multiple of 4
+    afx->overflowProtection = overflowProtection;
 }
 
-extern void AFX_echo_process(s8 *samples, u16 len, AFXEcho *afx);
+extern void AFX_echo_standard_process(s8 *samples, u16 len, AFXEcho *afx);
+extern void AFX_echo_overflowProtection_process(s8 *samples, u16 len, AFXEcho *afx);
+
+extern void AFX_echo_process(s8 *samples, u16 len, AFXEcho *afx)
+{
+    if (afx->overflowProtection) {
+        AFX_echo_overflowProtection_process(samples, len, afx);
+    } else {
+        AFX_echo_standard_process(samples, len, afx);
+    }
+}

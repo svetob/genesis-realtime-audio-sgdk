@@ -32,6 +32,7 @@
 #define PARAM_ROW_ECHO_ENABLED   1
 #define PARAM_ROW_ECHO_DELAY     2
 #define PARAM_ROW_ECHO_FEEDBACK  3
+#define PARAM_ROW_ECHO_PROTECT   4
 
 #define PARAM_ROW_DRIVE_ENABLED  1
 #define PARAM_ROW_DRIVE_GAIN     2
@@ -44,7 +45,7 @@
 
 static const char *tabNames[] = {"STREAM", "FILTER", " ECHO ", "REVERB", "DRIVE ", "OUTPUT"};
 static const char *filterTypeNames[] = {"1-POLE 6db", "2-POLE 12db", "2-P RESONANT 12db"};
-static u8 tabParamCnt[] = {0, 4, 3, 0, 2, 0};
+static u8 tabParamCnt[] = {0, 4, 4, 0, 2, 0};
 
 // ===========================
 // PRIVATE
@@ -168,6 +169,11 @@ static void changeParam(bool pressed, bool inc)
                     param_echo_delay -= 64;
                 }
             }
+        }
+
+        if (currentRow == PARAM_ROW_ECHO_PROTECT && pressed) {
+            // Enabled
+            param_echo_overflow_protect = !param_echo_overflow_protect;
         }
 
         echo_params_updated = true;
@@ -343,10 +349,12 @@ static void drawOptions()
         writeParamName("         ENABLED", PARAM_ROW_ECHO_ENABLED);
         writeParamName("           DELAY", PARAM_ROW_ECHO_DELAY);
         writeParamName("        FEEDBACK", PARAM_ROW_ECHO_FEEDBACK);
+        writeParamName("OVERFLOW PROTECT", PARAM_ROW_ECHO_PROTECT);
 
         writeParamValueText(param_echo_enabled ? "ON" : "OFF", PARAM_ROW_ECHO_ENABLED);
         writeParamValueU16(PARAM_ROW_ECHO_DELAY, param_echo_delay, " samples", 4);
         writeParamValueU16(PARAM_ROW_ECHO_FEEDBACK, param_filter_q, NULL, 5);
+        writeParamValueText(param_echo_overflow_protect ? "ON" : "OFF", PARAM_ROW_ECHO_PROTECT);
     }
 
     else if (currentTab == TAB_DRIVE) {
