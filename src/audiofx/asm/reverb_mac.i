@@ -6,7 +6,6 @@
 * Mixes sample from d6 into d1 with overflow protection
 * Clobbers registers d6,d7
 .macro  afx8_reverb_mixAndClip
-        move.l  (a0),d6
         move.l  d1,d7
         add.l   d6,d1
         * d6 = sample, d7 = reverb, d1 = sum
@@ -15,11 +14,11 @@
         eor.l   d1,d7
         eor.l   d1,d6
         and.l   d7,d6
-        and.l   d7,d6
+        and.l   #0x80808080,d6
         beq     .L\@nooverflow
 
         * -- Overflow detected - clip overflowed lanes
-afx_echo_protect_branch_\@:
+afx_reverb_protect_branch_\@:
         move.l  d6,d7
         lsr.l   #7,d7
         sub.l   d7,d6
@@ -32,9 +31,9 @@ afx_echo_protect_branch_\@:
         * Calculate clip
         move.l  d1,d7
         not.l   d7
-        and.l   d7,d7
+        and.l   #0x80808080,d7
         lsr.l   #7,d7
-        add.l   d6,d7
+        add.l   #0x7F7F7F7F,d7
 
         * Select clip for overflown lanes - d6 has clip mask, d7 has clip value
         eor.l   d1,d7
@@ -125,7 +124,7 @@ afx_echo_protect_branch_\@:
         move.l  (a1,d5.w),d6
         afx8_reverb_quarterAndMixDelaySampleD6
 
-        * Now mix (without overflow protection)
+        * Now mix
         move.l  (a0),d6
         afx8_reverb_halveSampleD6
         afx8_reverb_mixAndClip
