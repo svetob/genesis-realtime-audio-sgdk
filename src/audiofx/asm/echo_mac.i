@@ -1,3 +1,14 @@
+* Mixes sample from (a0) into d4 without overflow protection
+.macro  afx8_echo_mixNoClip
+
+.endm
+
+* Mixes sample from (a0) into d4 with overflow protection
+* Clobbers registers d0,d5
+.macro  afx8_echo_mixAndClip
+
+.endm
+
 
 .macro  afx8_echo_doProcess4
         * Read delayed line sample into d4
@@ -25,43 +36,9 @@
         add.l   d5,d4
         * '98c
 
-        * Now mix and prepare overflow protection
-        move.l  (a0),d0
-        move.l  d4,d5
-        add.l   d0,d4
-        * d0 = sample, d5 = echo, d4 = sum
+        * Now mix (without overflow protection)
+        add.l   (a0),d4
 
-        * Check for lane overflow
-        eor.l   d4,d5
-        eor.l   d4,d0
-        and.l   d5,d0
-        and.l   d7,d0
-        beq     .L\@nooverflow
-
-        * -- Overflow detected - clip overflowed lanes
-        move.l  d0,d5
-        lsr.l   #7,d5
-        sub.l   d5,d0
-        *7F
-        add.l   d0,d0
-        *FE
-        add.l   d5,d0
-        *FF
-
-        * Calculate clip
-        move.l  d4,d5
-        not.l   d5
-        and.l   d7,d5
-        lsr.l   #7,d5
-        add.l   d6,d5
-
-        * Select clip for overflown lanes - d0 has clip mask, d5 has clip value
-        eor.l   d4,d5
-        and.l   d0,d5
-        eor.l   d5,d4
-
-
-.L\@nooverflow:
         * --Write result to out and line
         move.l  d4,(a0)+
         move.l  d4,(a1,d1.w)

@@ -34,6 +34,8 @@
 #define PARAM_ROW_ECHO_FEEDBACK  3
 #define PARAM_ROW_ECHO_PROTECT   4
 
+#define PARAM_ROW_REVERB_ENABLED 1
+
 #define PARAM_ROW_DRIVE_ENABLED  1
 #define PARAM_ROW_DRIVE_GAIN     2
 
@@ -45,7 +47,7 @@
 
 static const char *tabNames[] = {"STREAM", "FILTER", " ECHO ", "REVERB", "DRIVE ", "OUTPUT"};
 static const char *filterTypeNames[] = {"1-POLE 6db", "2-POLE 12db", "2-P RESONANT 12db"};
-static u8 tabParamCnt[] = {0, 4, 4, 0, 2, 0};
+static u8 tabParamCnt[] = {0, 4, 4, 1, 2, 0};
 
 // ===========================
 // PRIVATE
@@ -153,13 +155,13 @@ static void changeParam(bool pressed, bool inc)
 
     // --- Echo ---
     if (currentTab == TAB_ECHO) {
-        if (currentRow == 1 && pressed) {
-            // Enabled
+        // Enabled
+        if (currentRow == PARAM_ROW_ECHO_ENABLED && pressed) {
             param_echo_enabled = !param_echo_enabled;
         }
 
-        if (currentRow == 2 && !pressed) {
-            // Freq
+        // Delay
+        if (currentRow == PARAM_ROW_ECHO_DELAY && !pressed) {
             if (inc) {
                 if (param_echo_delay < ECHO_BUFFER_SIZE) {
                     param_echo_delay += 64;
@@ -171,22 +173,30 @@ static void changeParam(bool pressed, bool inc)
             }
         }
 
+        // Overflow Protection
         if (currentRow == PARAM_ROW_ECHO_PROTECT && pressed) {
-            // Enabled
             param_echo_overflow_protect = !param_echo_overflow_protect;
         }
 
         echo_params_updated = true;
     }
 
+    // --- Reverb ---
+    if (currentTab == TAB_REVERB) {
+        // Enabled
+        if (currentRow == PARAM_ROW_REVERB_ENABLED && pressed) {
+            param_reverb_enabled = !param_reverb_enabled;
+        }
+    }
+
     if (currentTab == TAB_DRIVE) {
-        if (currentRow == 1 && pressed) {
-            // Enabled
+        // Enabled
+        if (currentRow == PARAM_ROW_DRIVE_ENABLED && pressed) {
             param_drive_enabled = !param_drive_enabled;
         }
 
-        if (currentRow == 2 && !pressed) {
-            // Gain
+        // Gain
+        if (currentRow == PARAM_ROW_DRIVE_GAIN && (pressed || param_drive_gain > 10)) {
             if (inc) {
                 if (param_drive_gain < 255) {
                     param_drive_gain += 1;
@@ -355,6 +365,12 @@ static void drawOptions()
         writeParamValueU16(PARAM_ROW_ECHO_DELAY, param_echo_delay, " samples", 4);
         writeParamValueU16(PARAM_ROW_ECHO_FEEDBACK, param_filter_q, NULL, 5);
         writeParamValueText(param_echo_overflow_protect ? "ON" : "OFF", PARAM_ROW_ECHO_PROTECT);
+    }
+
+    else if (currentTab == TAB_REVERB) {
+        writeParamName("         ENABLED", PARAM_ROW_REVERB_ENABLED);
+
+        writeParamValueText(param_reverb_enabled ? "ON" : "OFF", PARAM_ROW_REVERB_ENABLED);
     }
 
     else if (currentTab == TAB_DRIVE) {

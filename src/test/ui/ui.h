@@ -30,6 +30,9 @@ extern u8 param_echo_feedback;
 extern bool param_echo_overflow_protect;
 extern bool echo_params_updated;
 
+extern bool param_reverb_enabled;
+extern bool reverb_params_updated;
+
 extern bool param_drive_enabled;
 extern u8 param_drive_gain;
 extern bool drive_params_updated;

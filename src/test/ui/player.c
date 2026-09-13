@@ -27,6 +27,9 @@ u8 param_echo_feedback = 220;
 bool param_echo_overflow_protect = true;
 bool echo_params_updated = false;
 
+bool param_reverb_enabled = false;
+bool reverb_params_updated = false;
+
 bool param_drive_enabled = false;
 u8 param_drive_gain = 2;
 bool drive_params_updated = false;
@@ -53,7 +56,9 @@ static void streamProcessingCallback(s8 *stream, u16 len, void *data)
     if (param_echo_enabled) {
         AFX_echo_process(stream, len, afx_echo);
     }
-    AFX_reverb_process(stream, len, afx_reverb);
+    if (param_reverb_enabled) {
+        AFX_reverb_process(stream, len, afx_reverb);
+    }
     if (param_drive_enabled) {
         AFX_drive_process(stream, len, afx_drive);
     }
@@ -74,7 +79,8 @@ void startStream()
     }
 
     if (afx_echo == NULL) {
-        afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE_4096, param_echo_delay, param_echo_overflow_protect);
+        afx_echo =
+            AFX_echo_create(ECHO_BUFFER_SIZE_4096, param_echo_delay, param_echo_overflow_protect);
     }
 
     if (afx_reverb == NULL) {
@@ -106,6 +112,9 @@ void updateParams()
         AFX_echo_update(afx_echo, param_echo_delay, param_echo_overflow_protect);
         echo_params_updated = false;
     }
+    if (reverb_params_updated) {
+        // No-op atm
+    }
     if (drive_params_updated) {
         AFX_drive_update(afx_drive, DRIVE_DIGITAL_CLIP, param_drive_gain);
     }
@@ -125,10 +134,17 @@ void resetStream()
     PCMSTREAM_reset(pcm_stream);
 
     AFX_echo_free(afx_echo);
-    afx_echo = AFX_echo_create(ECHO_BUFFER_SIZE_4096, param_echo_delay, param_echo_overflow_protect);
+    afx_echo =
+        AFX_echo_create(ECHO_BUFFER_SIZE_4096, param_echo_delay, param_echo_overflow_protect);
+
+    AFX_reverb_free(afx_reverb);
+    afx_reverb = AFX_reverb_create(REVERB_BUFFER_SIZE_4096);
 
     AFX_filter_lp_free(afx_filter_lp);
     afx_filter_lp = AFX_filter_lp_create(param_filter_type, param_filter_freq, param_filter_q);
+
+    AFX_drive_free(afx_drive);
+    afx_drive = AFX_drive_create(DRIVE_DIGITAL_CLIP, 4);
 
     PCMSTREAM_start(pcm_stream);
 }
